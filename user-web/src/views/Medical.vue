@@ -229,8 +229,8 @@ onMounted(async () => {
 }
 .loc-card.active,
 .doctor-card.active {
-  border-color: #409eff;
-  background: #ecf5ff;
+  border-color: var(--brand-forest);
+  background: var(--brand-sage);
 }
 .loc-name,
 .doctor-name {

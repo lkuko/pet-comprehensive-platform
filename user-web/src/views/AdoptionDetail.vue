@@ -228,7 +228,7 @@ onMounted(load)
   border: 2px solid transparent;
 }
 .thumbs img.active {
-  border-color: #409eff;
+  border-color: var(--brand-forest);
 }
 .title-row {
   display: flex;

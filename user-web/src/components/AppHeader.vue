@@ -1,9 +1,21 @@
 <template>
   <header class="app-header">
-    <div class="brand" @click="$router.push('/')">
-      <span class="logo">🐾</span>
-      <span class="title">智能宠物综合服务平台</span>
-    </div>
+    <router-link to="/" class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="20" cy="27" rx="9.5" ry="8" />
+          <ellipse cx="8.5" cy="15" rx="4.2" ry="5.2" />
+          <ellipse cx="16.5" cy="10.5" rx="4.2" ry="5.2" />
+          <ellipse cx="23.5" cy="10.5" rx="4.2" ry="5.2" />
+          <ellipse cx="31.5" cy="15" rx="4.2" ry="5.2" />
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">爱宠之家</span>
+        <span class="brand-tag">领养 · 医疗 · 洗护 · 商城</span>
+      </span>
+    </router-link>
+
     <nav class="nav">
       <router-link to="/" class="nav-link">首页</router-link>
       <router-link to="/pets" class="nav-link">我的宠物</router-link>
@@ -12,16 +24,19 @@
       <router-link to="/care" class="nav-link">洗护寄养</router-link>
       <router-link to="/shop" class="nav-link">商城</router-link>
       <router-link to="/orders" class="nav-link">我的订单</router-link>
-      <router-link to="/profile" class="nav-link">个人中心</router-link>
     </nav>
+
     <div class="right">
       <template v-if="auth.isLoggedIn">
-        <span class="nickname">{{ auth.user?.nickname || auth.user?.username }}</span>
-        <el-button size="small" @click="logout">退出</el-button>
+        <router-link to="/profile" class="user-chip">
+          <span class="avatar">{{ (auth.user?.nickname || auth.user?.username || '客')[0] }}</span>
+          <span class="nickname">{{ auth.user?.nickname || auth.user?.username }}</span>
+        </router-link>
+        <el-button size="small" text @click="logout">退出</el-button>
       </template>
       <template v-else>
-        <el-button size="small" @click="$router.push('/login')">登录</el-button>
-        <el-button size="small" type="primary" @click="$router.push('/register')">注册</el-button>
+        <el-button size="small" text @click="$router.push('/login')">登录</el-button>
+        <el-button size="small" type="primary" round @click="$router.push('/register')">注册</el-button>
       </template>
     </div>
   </header>
@@ -42,48 +57,123 @@ function logout() {
 
 <style scoped>
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 0 24px;
-  height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  gap: 20px;
+  padding: 0 28px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--brand-line);
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 700;
-  color: #303133;
+  gap: 11px;
+  text-decoration: none;
+  flex-shrink: 0;
 }
-.logo {
-  font-size: 22px;
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #34795a, var(--brand-forest-deep));
+  box-shadow: 0 4px 12px rgba(47, 107, 79, 0.28);
+}
+.brand-mark svg {
+  width: 26px;
+  height: 26px;
+  fill: #fff;
+}
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  letter-spacing: 1px;
+}
+.brand-tag {
+  font-size: 10px;
+  color: var(--el-text-color-secondary);
+  letter-spacing: 0.5px;
 }
 .nav {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
+  justify-content: center;
 }
 .nav-link {
-  padding: 6px 12px;
-  color: #606266;
+  position: relative;
+  padding: 8px 14px;
+  color: var(--el-text-color-regular);
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 14px;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-link:hover {
+  color: var(--brand-forest);
+  background: var(--brand-sage);
 }
 .nav-link.router-link-active {
-  color: #409eff;
-  background: #ecf5ff;
+  color: var(--brand-forest);
+  background: var(--brand-sage);
+  font-weight: 600;
 }
 .right {
   display: flex;
   align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.user-chip {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  text-decoration: none;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--brand-line);
+  transition: background 0.15s;
+}
+.user-chip:hover {
+  background: var(--brand-sage);
+}
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand-apricot-soft);
+  color: var(--brand-apricot);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: 14px;
 }
 .nickname {
-  color: #303133;
+  color: var(--brand-ink);
   font-size: 14px;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .brand-tag,
+  .nav {
+    display: none;
+  }
 }
 </style>

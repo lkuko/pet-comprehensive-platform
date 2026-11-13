@@ -24,7 +24,7 @@ from app.models.medical import (
     MedicalLocation,
     MedicalService,
 )
-from app.models.pet import AdoptionPet, PetCategory
+from app.models.pet import AdoptionPet, AdoptionPetImage, PetCategory
 from app.models.user import User
 from app.utils.time import business_tz, utcnow
 
@@ -64,6 +64,21 @@ _PETS = [
      "聪明友善，服从性极佳。", "重庆", "有大型犬饲养经验优先。",
      "黑色拉布拉多，稳重可靠。"),
 ]
+
+
+# 演示领养宠物封面图（文件名位于 server/uploads/pets/ 下，seed 前需先放置图片）
+_PET_IMAGES = {
+    "小白": "pet-01.jpg",
+    "花花": "pet-02.jpg",
+    "旺财": "pet-03.jpg",
+    "豆豆": "pet-04.jpg",
+    "球球": "pet-05.jpg",
+    "大黄": "pet-06.jpg",
+    "咪咪": "pet-07.jpg",
+    "兔兔": "pet-08.jpg",
+    "雪球": "pet-09.jpg",
+    "黑子": "pet-10.jpg",
+}
 
 
 def seed_admin(db: Session) -> None:
@@ -133,7 +148,15 @@ def seed_pets(db: Session, categories: dict[str, PetCategory]) -> None:
             published_at=utcnow(),
         )
         db.add(pet)
+        img = _PET_IMAGES.get(name)
+        if img:
+            pet.images.append(AdoptionPetImage(url=f"/uploads/pets/{img}", sort=0))
         created += 1
+    # 回填既有演示宠物的封面图（幂等：仅当尚无图片时补充）
+    for name, filename in _PET_IMAGES.items():
+        pet = db.scalar(select(AdoptionPet).where(AdoptionPet.name == name))
+        if pet and not pet.images:
+            pet.images.append(AdoptionPetImage(url=f"/uploads/pets/{filename}", sort=0))
     print(f"演示领养宠物创建 {created} 条（幂等，已存在的跳过）。")
 
 
@@ -319,6 +342,17 @@ _MALL_PRODUCTS = [
 ]
 
 
+# 演示商品封面图（文件名位于 server/uploads/products/ 下）
+_PRODUCT_IMAGES = {
+    "全价成猫粮 2kg": "product-01.jpg",
+    "猫罐头 85g×12罐": "product-02.jpg",
+    "全价犬粮 5kg": "product-03.jpg",
+    "豆腐猫砂 6L": "product-04.jpg",
+    "宠物尿垫 100片": "product-05.jpg",
+    "逗猫棒套装": "product-06.jpg",
+}
+
+
 def seed_mall(db: Session) -> None:
     """幂等创建商城分类与商品。"""
     categories: dict[str, ProductCategory] = {}
@@ -342,9 +376,15 @@ def seed_mall(db: Session) -> None:
             category_id=categories[cat_name].id,
             name=name, subtitle=subtitle, description=desc,
             price=price, stock=stock, sales=0, status="ACTIVE",
+            cover_image=f"/uploads/products/{_PRODUCT_IMAGES[name]}" if name in _PRODUCT_IMAGES else None,
         )
         db.add(p)
         created += 1
+    # 回填既有商品的封面图（幂等：仅当尚无封面时补充）
+    for name, filename in _PRODUCT_IMAGES.items():
+        p = db.scalar(select(Product).where(Product.name == name))
+        if p and not p.cover_image:
+            p.cover_image = f"/uploads/products/{filename}"
     if created:
         print(f"商品创建 {created} 条（幂等，已存在的跳过）。")
     else:

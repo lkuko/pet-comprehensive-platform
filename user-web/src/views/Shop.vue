@@ -19,7 +19,12 @@
           <el-empty v-if="!products.length && !loading" description="暂无商品" />
           <div v-else class="grid">
             <el-card v-for="p in products" :key="p.id" class="product-card" shadow="hover">
-              <div class="cover">{{ p.cover_image ? '' : '🐾' }}</div>
+              <div class="cover">
+                <el-image v-if="p.cover_image" :src="p.cover_image" fit="cover" class="cover-img" />
+                <div v-else class="cover-ph">
+                  <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="27" rx="9.5" ry="8" /><ellipse cx="8.5" cy="15" rx="4.2" ry="5.2" /><ellipse cx="16.5" cy="10.5" rx="4.2" ry="5.2" /><ellipse cx="23.5" cy="10.5" rx="4.2" ry="5.2" /><ellipse cx="31.5" cy="15" rx="4.2" ry="5.2" /></svg>
+                </div>
+              </div>
               <div class="p-name">{{ p.name }}</div>
               <div class="p-subtitle">{{ p.subtitle || '—' }}</div>
               <div class="p-meta">
@@ -244,14 +249,23 @@ onMounted(async () => {
   text-align: center;
 }
 .cover {
-  height: 90px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  background: #f5f7fa;
-  border-radius: 6px;
+  background: linear-gradient(145deg, var(--brand-sage), #f2f6f2);
+  border-radius: 10px;
   margin-bottom: 10px;
+  overflow: hidden;
+}
+.cover-img {
+  width: 100%;
+  height: 100%;
+}
+.cover-ph svg {
+  width: 44px;
+  height: 44px;
+  fill: var(--brand-sage-strong);
 }
 .p-name {
   font-weight: 600;
@@ -271,7 +285,7 @@ onMounted(async () => {
   margin-bottom: 10px;
 }
 .p-price {
-  color: #f56c6c;
+  color: var(--brand-apricot);
   font-size: 18px;
   font-weight: 700;
 }
@@ -322,7 +336,7 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 .ci-price {
-  color: #f56c6c;
+  color: var(--brand-apricot);
   font-size: 14px;
   margin-bottom: 6px;
 }
@@ -340,7 +354,7 @@ onMounted(async () => {
   margin-bottom: 10px;
 }
 .cf-amount {
-  color: #f56c6c;
+  color: var(--brand-apricot);
   font-size: 20px;
   font-weight: 700;
 }

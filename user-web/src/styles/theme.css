@@ -1,0 +1,139 @@
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
+
+/* ============ 品牌 Token ============ */
+:root {
+  /* 色彩：森林绿（结构）+ 暖杏橙（记忆点）+ 暖纸（氛围） */
+  --brand-ink: #23302a;
+  --brand-forest: #2f6b4f;
+  --brand-forest-deep: #24523d;
+  --brand-sage: #e7efe9;
+  --brand-sage-strong: #bfd4c6;
+  --brand-apricot: #e07b34;
+  --brand-apricot-soft: #fbead9;
+  --brand-cream: #fbf6ec;
+  --brand-paper: #f6f7f4;
+  --brand-line: #e6ebe4;
+
+  /* 字体 */
+  --font-display: 'LXGW WenKai', 'STKaiti', 'KaiTi', 'SimSun', serif;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+
+  /* ============ Element Plus 变量覆盖 ============ */
+  --el-color-primary: #2f6b4f;
+  --el-color-primary-light-3: #6d9784;
+  --el-color-primary-light-5: #97b5a7;
+  --el-color-primary-light-7: #c1d3ca;
+  --el-color-primary-light-8: #d5e1dc;
+  --el-color-primary-light-9: #eaf0ee;
+  --el-color-primary-dark-2: #24523d;
+
+  --el-color-success: #2f6b4f;
+  --el-color-warning: #e07b34;
+  --el-color-danger: #c9483b;
+  --el-color-error: #c9483b;
+  --el-color-info: #7a867f;
+
+  --el-text-color-primary: #23302a;
+  --el-text-color-regular: #45524c;
+  --el-text-color-secondary: #7a867f;
+  --el-text-color-placeholder: #a8b1ac;
+  --el-text-color-disabled: #c4cbc6;
+
+  --el-border-color: #d9e0da;
+  --el-border-color-light: #e6ebe4;
+  --el-border-color-lighter: #eff3f0;
+  --el-border-color-extra-light: #f4f6f3;
+
+  --el-fill-color-light: #f4f6f3;
+  --el-fill-color-lighter: #f8faf8;
+  --el-fill-color-blank: #ffffff;
+
+  --el-border-radius-base: 10px;
+  --el-border-radius-small: 8px;
+  --el-border-radius-round: 999px;
+
+  --el-font-family: var(--font-body);
+  --el-box-shadow-light: 0 2px 12px rgba(35, 48, 42, 0.06);
+  --el-box-shadow: 0 6px 20px rgba(35, 48, 42, 0.08);
+}
+
+/* ============ 基础排版 ============ */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--brand-ink);
+  background: var(--brand-paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--brand-ink);
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+a {
+  color: var(--brand-forest);
+  text-decoration: none;
+}
+
+/* ============ Element Plus 细节微调 ============ */
+.el-button {
+  font-weight: 500;
+}
+
+.el-button--primary {
+  --el-button-hover-bg-color: var(--brand-forest-deep);
+  --el-button-hover-border-color: var(--brand-forest-deep);
+  --el-button-active-bg-color: var(--brand-forest-deep);
+}
+
+.el-card {
+  --el-card-border-radius: 14px;
+  border: 1px solid var(--brand-line);
+}
+
+.el-tag {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.el-table th.el-table__cell {
+  background: var(--brand-sage);
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background-color: var(--brand-forest);
+}
+
+/* 通用强调 CTA（暖杏橙 —— 仅用于 hero 等关键按钮） */
+.btn-accent {
+  background: linear-gradient(135deg, #df7a2e, #c8651f) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(200, 101, 31, 0.35);
+}
+
+.btn-accent:hover {
+  filter: brightness(0.96);
+}

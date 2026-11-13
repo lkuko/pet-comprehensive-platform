@@ -278,8 +278,8 @@ onMounted(async () => {
 }
 .cat-card.active,
 .pkg-card.active {
-  border-color: #409eff;
-  background: #ecf5ff;
+  border-color: var(--brand-forest);
+  background: var(--brand-sage);
 }
 .cat-name,
 .pkg-name {
@@ -294,7 +294,7 @@ onMounted(async () => {
   margin-bottom: 6px;
 }
 .pkg-price {
-  color: #f56c6c;
+  color: var(--brand-apricot);
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 6px;
@@ -315,7 +315,7 @@ onMounted(async () => {
   border-radius: 8px;
 }
 .total-price {
-  color: #f56c6c;
+  color: var(--brand-apricot);
   font-size: 20px;
   font-weight: 700;
 }

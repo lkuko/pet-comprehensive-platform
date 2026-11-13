@@ -399,7 +399,7 @@ onMounted(() => {
   height: 18px;
   line-height: 18px;
   text-align: center;
-  background: #f56c6c;
+  background: var(--el-color-danger);
   color: #fff;
   border-radius: 50%;
   cursor: pointer;

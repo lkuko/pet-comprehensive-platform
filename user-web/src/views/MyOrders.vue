@@ -161,7 +161,7 @@ onMounted(load)
   color: #606266;
 }
 .total b {
-  color: #f56c6c;
+  color: var(--brand-apricot);
   font-size: 18px;
 }
 </style>
