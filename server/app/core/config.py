@@ -68,6 +68,14 @@ class Settings(BaseSettings):
     admin_web_origin: str = "http://localhost:5174"
 
     @property
+    def upload_path(self) -> Path:
+        """上传目录的绝对路径（相对路径基于 server/ 目录解析）。"""
+        p = Path(self.upload_dir)
+        if not p.is_absolute():
+            p = _SERVER_DIR / p
+        return p
+
+    @property
     def database_url(self) -> str:
         return (
             f"mysql+pymysql://{self.mysql_user}:{self.mysql_password}"

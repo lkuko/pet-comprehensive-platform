@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.api.router import api_router
@@ -110,3 +111,11 @@ def health_ready():
 
 
 app.include_router(api_router, prefix=settings.api_prefix)
+
+# 挂载上传目录为静态资源，供图片 URL 直接访问
+settings.upload_path.mkdir(parents=True, exist_ok=True)
+app.mount(
+    settings.upload_base_url,
+    StaticFiles(directory=str(settings.upload_path)),
+    name="uploads",
+)

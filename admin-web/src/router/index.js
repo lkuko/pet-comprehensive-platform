@@ -7,6 +7,12 @@ const routes = [
     name: 'dashboard',
     component: () => import('../views/Dashboard.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/pets',
+    name: 'pets',
+    component: () => import('../views/Pets.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

@@ -10,6 +10,8 @@ os.environ["APP_ENV"] = "test"
 os.environ["APP_DEBUG"] = "false"
 os.environ["MYSQL_PORT"] = "39999"  # 封闭端口，测试不连真实 MySQL
 os.environ["REDIS_PORT"] = "39998"  # 封闭端口，测试不连真实 Redis
+# 上传目录指向临时目录，避免测试污染真实 uploads/
+os.environ["UPLOAD_DIR"] = os.path.join(tempfile.mkdtemp(prefix="pet_upload_"), "uploads")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

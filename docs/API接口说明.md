@@ -38,6 +38,20 @@
 | POST | `/api/v1/admin/auth/login` | 管理员登录（仅 ADMIN 角色） |
 | GET | `/api/v1/user/profile` | 当前用户资料（USER/ADMIN） |
 | PUT | `/api/v1/user/profile` | 修改个人资料（USER/ADMIN） |
+| GET | `/api/v1/user/pets` | 我的宠物列表（USER） |
+| POST | `/api/v1/user/pets` | 新增宠物档案（USER） |
+| GET | `/api/v1/user/pets/{id}` | 宠物档案详情（所属 USER） |
+| PUT | `/api/v1/user/pets/{id}` | 修改宠物档案（所属 USER） |
+| DELETE | `/api/v1/user/pets/{id}` | 删除宠物档案（软删除/停用，所属 USER） |
+| GET | `/api/v1/public/pet-categories` | 领养分类列表（游客） |
+| GET | `/api/v1/public/adoption-pets` | 领养宠物分页/筛选（游客，仅可领养） |
+| GET | `/api/v1/public/adoption-pets/{id}` | 领养宠物详情（游客，仅可领养） |
+| POST | `/api/v1/upload/image` | 图片上传（任意登录用户；subdir=pets/products/avatars） |
+| GET | `/api/v1/admin/adoption-pets` | 宠物管理列表（ADMIN） |
+| POST | `/api/v1/admin/adoption-pets` | 新增领养宠物（ADMIN） |
+| GET | `/api/v1/admin/adoption-pets/{id}` | 宠物详情（ADMIN，任意状态） |
+| PUT | `/api/v1/admin/adoption-pets/{id}` | 编辑领养宠物（ADMIN） |
+| PATCH | `/api/v1/admin/adoption-pets/{id}/status` | 上下架（ADMIN） |
 
 ## 认证
 
