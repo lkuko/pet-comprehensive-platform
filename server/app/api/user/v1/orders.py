@@ -51,3 +51,12 @@ def cancel_order(
     db: Session = Depends(get_db),
 ):
     return ApiResponse(data=mall_service.cancel_order(db, user.id, order_id))
+
+
+@router.post("/{order_id}/confirm-receipt", response_model=ApiResponse[OrderOut])
+def confirm_receipt(
+    order_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return ApiResponse(data=mall_service.confirm_receipt(db, user.id, order_id))

@@ -96,6 +96,7 @@ class CartItemOut(BaseModel):
 # ---------------- 订单 ----------------
 
 class CheckoutCreate(BaseModel):
+    idempotency_key: str | None = Field(default=None, max_length=64)
     receiver_name: str = Field(min_length=1, max_length=50)
     receiver_phone: str = Field(min_length=1, max_length=20)
     receiver_address: str = Field(min_length=1, max_length=200)
@@ -128,4 +129,40 @@ class OrderOut(BaseModel):
     shipped_at: str | None
     completed_at: str | None
     cancelled_at: str | None
+    closed_at: str | None
     created_at: str
+
+
+# ---------------- 收货地址 ----------------
+
+class AddressCreate(BaseModel):
+    receiver_name: str = Field(min_length=1, max_length=50)
+    receiver_phone: str = Field(min_length=1, max_length=20)
+    province: str | None = Field(default=None, max_length=50)
+    city: str | None = Field(default=None, max_length=50)
+    district: str | None = Field(default=None, max_length=50)
+    detail_address: str = Field(min_length=1, max_length=200)
+    is_default: bool = False
+
+
+class AddressUpdate(BaseModel):
+    receiver_name: str | None = Field(default=None, min_length=1, max_length=50)
+    receiver_phone: str | None = Field(default=None, min_length=1, max_length=20)
+    province: str | None = Field(default=None, max_length=50)
+    city: str | None = Field(default=None, max_length=50)
+    district: str | None = Field(default=None, max_length=50)
+    detail_address: str | None = Field(default=None, min_length=1, max_length=200)
+    is_default: bool | None = None
+
+
+class AddressOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    receiver_name: str
+    receiver_phone: str
+    province: str | None
+    city: str | None
+    district: str | None
+    detail_address: str
+    is_default: bool

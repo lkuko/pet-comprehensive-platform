@@ -87,7 +87,8 @@ export const ORDER_STATUS = {
   PAID: '待发货',
   SHIPPED: '已发货',
   COMPLETED: '已完成',
-  CANCELLED: '已取消'
+  CANCELLED: '已取消',
+  CLOSED: '已关闭'
 }
 
 export const ORDER_STATUS_TAG = {
@@ -95,5 +96,6 @@ export const ORDER_STATUS_TAG = {
   PAID: 'primary',
   SHIPPED: 'success',
   COMPLETED: 'info',
-  CANCELLED: 'info'
+  CANCELLED: 'info',
+  CLOSED: 'info'
 }

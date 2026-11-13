@@ -84,7 +84,7 @@ def update_product(
     admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    return ApiResponse(data=mall_service.update_product(db, product_id, data))
+    return ApiResponse(data=mall_service.update_product(db, product_id, data, admin))
 
 
 @router.delete("/products/{product_id}", response_model=ApiResponse)

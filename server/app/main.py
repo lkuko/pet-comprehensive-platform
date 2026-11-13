@@ -27,7 +27,19 @@ async def lifespan(app: FastAPI):
     level = logging.DEBUG if settings.app_debug else logging.INFO
     setup_logging(level)
     logger.info("应用启动 | env=%s", settings.app_env)
+
+    # 定时关单仅在非测试环境启动（V1 单实例）
+    scheduler_started = False
+    if settings.app_env != "test":
+        from app.tasks.order_tasks import start_scheduler, stop_scheduler
+
+        start_scheduler()
+        scheduler_started = True
+
     yield
+
+    if scheduler_started:
+        stop_scheduler()
     logger.info("应用关闭")
 
 

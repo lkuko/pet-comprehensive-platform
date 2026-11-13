@@ -1,8 +1,8 @@
 """商城数据访问层。"""
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.models.mall import Order, Product, ProductCategory
+from app.models.mall import Order, Product, ProductCategory, UserAddress
 
 
 class MallRepository:
@@ -27,3 +27,25 @@ class MallRepository:
     def count_products_for_category(self, category_id: int) -> int:
         stmt = select(Product.id).where(Product.category_id == category_id)
         return len(self.db.execute(stmt).all())
+
+    def list_addresses(self, user_id: int) -> list[UserAddress]:
+        stmt = (
+            select(UserAddress)
+            .where(UserAddress.user_id == user_id)
+            .order_by(UserAddress.is_default.desc(), UserAddress.id.desc())
+        )
+        return list(self.db.execute(stmt).scalars().all())
+
+    def get_address(self, user_id: int, address_id: int) -> UserAddress | None:
+        return self.db.scalar(
+            select(UserAddress).where(
+                UserAddress.id == address_id, UserAddress.user_id == user_id
+            )
+        )
+
+    def clear_default_address(self, user_id: int) -> None:
+        self.db.execute(
+            update(UserAddress)
+            .where(UserAddress.user_id == user_id, UserAddress.is_default.is_(True))
+            .values(is_default=False)
+        )

@@ -83,7 +83,20 @@
     </main>
 
     <!-- 结算弹窗 -->
-    <el-dialog v-model="checkoutVisible" title="确认订单" width="520px">
+    <el-dialog v-model="checkoutVisible" title="确认订单" width="560px">
+      <div class="addr-picker">
+        <el-select
+          v-if="addresses.length"
+          v-model="selectedAddressId"
+          placeholder="选择收货地址"
+          class="addr-select"
+          @change="onPickAddress"
+        >
+          <el-option v-for="a in addresses" :key="a.id" :value="a.id" :label="addrLabel(a)" />
+        </el-select>
+        <el-button v-else text type="primary" @click="$router.push('/addresses')">+ 新增收货地址</el-button>
+        <el-button text @click="$router.push('/addresses')">管理地址</el-button>
+      </div>
       <el-form :model="receiver" label-width="90px">
         <el-form-item label="收货人" required><el-input v-model="receiver.receiver_name" maxlength="50" /></el-form-item>
         <el-form-item label="联系电话" required><el-input v-model="receiver.receiver_phone" maxlength="20" /></el-form-item>
@@ -103,7 +116,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AppHeader from '../components/AppHeader.vue'
-import { listCategories, listProducts, listCart, addToCart, updateCartItem, removeCartItem, clearCart, checkout } from '../api/mall'
+import { listCategories, listProducts, listCart, addToCart, updateCartItem, removeCartItem, clearCart, checkout, listAddresses } from '../api/mall'
 
 const router = useRouter()
 
@@ -120,6 +133,9 @@ const cart = ref([])
 const checkoutVisible = ref(false)
 const submitting = ref(false)
 const receiver = ref({ receiver_name: '', receiver_phone: '', receiver_address: '', remark: '' })
+const addresses = ref([])
+const selectedAddressId = ref(null)
+const idemKey = ref('')
 
 const cartTotal = computed(() => cart.value.reduce((s, i) => s + Number(i.subtotal || 0), 0).toFixed(2))
 
@@ -177,7 +193,31 @@ async function clear() {
 
 function openCheckout() {
   if (!cart.value.length) return ElMessage.warning('购物车为空')
+  idemKey.value = Date.now().toString(36) + Math.random().toString(36).slice(2, 10)
+  loadAddresses()
   checkoutVisible.value = true
+}
+
+function addrLabel(a) {
+  const prefix = a.is_default ? '[默认] ' : ''
+  const region = [a.province, a.city, a.district].filter(Boolean).join('')
+  return `${prefix}${a.receiver_name} ${a.receiver_phone} ${region}${a.detail_address}`
+}
+
+function onPickAddress(id) {
+  const a = addresses.value.find((x) => x.id === id)
+  if (!a) return
+  receiver.value.receiver_name = a.receiver_name
+  receiver.value.receiver_phone = a.receiver_phone
+  receiver.value.receiver_address = [a.province, a.city, a.district, a.detail_address].filter(Boolean).join(' ')
+}
+
+async function loadAddresses() {
+  try {
+    addresses.value = (await listAddresses()).data || []
+  } catch (e) {
+    addresses.value = []
+  }
 }
 
 async function submitCheckout() {
@@ -187,6 +227,7 @@ async function submitCheckout() {
   submitting.value = true
   try {
     await checkout({
+      idempotency_key: idemKey.value || null,
       receiver_name: receiver.value.receiver_name.trim(),
       receiver_phone: receiver.value.receiver_phone.trim(),
       receiver_address: receiver.value.receiver_address.trim(),
@@ -204,6 +245,7 @@ onMounted(async () => {
   categories.value = (await listCategories()).data
   await loadProducts()
   await loadCart()
+  await loadAddresses()
 })
 </script>
 
@@ -360,5 +402,14 @@ onMounted(async () => {
 }
 .checkout-btn {
   width: 100%;
+}
+.addr-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.addr-select {
+  flex: 1;
 }
 </style>

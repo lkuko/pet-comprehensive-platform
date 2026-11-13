@@ -107,8 +107,8 @@ class CareAppointmentStatus(StrEnum):
 class OrderStatus(StrEnum):
     """商城订单状态机。
 
-    PENDING_PAYMENT → PAID / CANCELLED；PAID → SHIPPED → COMPLETED。
-    取消仅允许在待支付状态，取消时回滚库存与销量。
+    PENDING_PAYMENT → PAID / CANCELLED / CLOSED；PAID → SHIPPED → COMPLETED。
+    取消与超时关单仅允许在待支付状态，均回滚库存与销量并写库存流水。
     """
 
     PENDING_PAYMENT = "PENDING_PAYMENT"
@@ -116,3 +116,12 @@ class OrderStatus(StrEnum):
     SHIPPED = "SHIPPED"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
+    CLOSED = "CLOSED"
+
+
+class InventoryChangeType(StrEnum):
+    """库存流水变更类型（扣减记负数，释放/增加记正数）。"""
+
+    ORDER_DEDUCT = "ORDER_DEDUCT"  # 下单预扣
+    ORDER_RELEASE = "ORDER_RELEASE"  # 取消/超时关单返还
+    ADMIN_ADJUST = "ADMIN_ADJUST"  # 管理员调库存

@@ -1,17 +1,31 @@
-"""商城业务：公开查询、购物车（Redis）、下单锁库存、订单状态机、管理端维护。"""
+"""商城业务：公开查询、购物车（Redis）、下单锁库存、订单状态机、地址、管理端维护。"""
+import logging
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.common.enums import EnableStatus, OrderStatus
+from app.common.enums import EnableStatus, InventoryChangeType, OrderStatus
 from app.common.pagination import PageResult, normalize_page
+from app.core.config import settings
 from app.core.exceptions import ConflictError, NotFoundError, ParamError
 from app.core.redis import get_redis
-from app.models.mall import Order, OrderItem, Product, ProductCategory
+from app.models.mall import (
+    InventoryLog,
+    Order,
+    OrderItem,
+    Product,
+    ProductCategory,
+    UserAddress,
+)
 from app.models.user import User
 from app.repositories.mall import MallRepository
 from app.schemas.mall import (
+    AddressCreate,
+    AddressOut,
+    AddressUpdate,
     CartItemAdd,
     CartItemOut,
     CartItemUpdate,
@@ -27,6 +41,34 @@ from app.schemas.mall import (
 )
 from app.utils.order_no import gen_no
 from app.utils.time import to_iso, utcnow
+
+logger = logging.getLogger("app.services.mall")
+
+
+def _write_inventory_log(
+    db: Session,
+    product_id: int,
+    change_type: str,
+    change_quantity: int,
+    before_stock: int,
+    after_stock: int,
+    related_order_no: str | None = None,
+    operator_id: int | None = None,
+    remark: str | None = None,
+) -> None:
+    """写一条库存流水（扣减记负数，返还/增加记正数）。"""
+    db.add(
+        InventoryLog(
+            product_id=product_id,
+            change_type=change_type,
+            change_quantity=change_quantity,
+            before_stock=before_stock,
+            after_stock=after_stock,
+            related_order_no=related_order_no,
+            operator_id=operator_id,
+            remark=remark,
+        )
+    )
 
 
 def _cart_key(user_id: int) -> str:
@@ -213,19 +255,33 @@ def _order_out(order: Order) -> OrderOut:
         shipped_at=to_iso(order.shipped_at),
         completed_at=to_iso(order.completed_at),
         cancelled_at=to_iso(order.cancelled_at),
+        closed_at=to_iso(order.closed_at),
         created_at=to_iso(order.created_at),
     )
 
 
 def checkout(db: Session, user_id: int, data: CheckoutCreate) -> OrderOut:
-    """从购物车下单：按商品 id 升序加行锁扣减库存，防超卖，明细做快照。"""
+    """从购物车下单：幂等键防重复下单，按商品 id 升序加行锁扣减库存防超卖，明细做快照，写库存流水。"""
     repo = MallRepository(db)
+
+    # 幂等命中：同一用户同一幂等键直接返回已存在订单，不重复扣库存
+    if data.idempotency_key:
+        existing = db.scalar(
+            select(Order).where(
+                Order.user_id == user_id,
+                Order.idempotency_key == data.idempotency_key,
+            )
+        )
+        if existing:
+            return _order_out(existing)
+
     cart_items = _read_cart_items(db, user_id)
     if not cart_items:
         raise ParamError("购物车为空")
 
     order = Order(
         order_no=gen_no("O"),
+        idempotency_key=data.idempotency_key,
         user_id=user_id,
         status=OrderStatus.PENDING_PAYMENT.value,
         total_amount=Decimal("0"),
@@ -242,6 +298,7 @@ def checkout(db: Session, user_id: int, data: CheckoutCreate) -> OrderOut:
             raise ConflictError(f"商品已下架：{product.name}")
         if locked.stock < qty:
             raise ConflictError(f"库存不足：{locked.name}（剩余 {locked.stock}）")
+        before = locked.stock
         locked.stock -= qty
         locked.sales += qty
         subtotal = locked.price * qty
@@ -256,10 +313,33 @@ def checkout(db: Session, user_id: int, data: CheckoutCreate) -> OrderOut:
                 subtotal=subtotal,
             )
         )
+        _write_inventory_log(
+            db,
+            locked.id,
+            InventoryChangeType.ORDER_DEDUCT.value,
+            -qty,
+            before,
+            locked.stock,
+            related_order_no=order.order_no,
+        )
 
     order.total_amount = total
     db.add(order)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # 并发重复下单：唯一约束 (user_id, idempotency_key) 兜底，返回已存在订单
+        db.rollback()
+        if data.idempotency_key:
+            existing = db.scalar(
+                select(Order).where(
+                    Order.user_id == user_id,
+                    Order.idempotency_key == data.idempotency_key,
+                )
+            )
+            if existing:
+                return _order_out(existing)
+        raise
     clear_cart(user_id)
     db.refresh(order)
     return _order_out(order)
@@ -303,8 +383,19 @@ def cancel_order(db: Session, user_id: int, order_id: int) -> OrderOut:
     for item in order.items:
         product = repo.get_product_for_update(item.product_id)
         if product:
+            before = product.stock
             product.stock += item.quantity
             product.sales = max(0, product.sales - item.quantity)
+            _write_inventory_log(
+                db,
+                product.id,
+                InventoryChangeType.ORDER_RELEASE.value,
+                item.quantity,
+                before,
+                product.stock,
+                related_order_no=order.order_no,
+                remark="取消订单返还库存",
+            )
     order.status = OrderStatus.CANCELLED.value
     order.cancelled_at = utcnow()
     db.commit()
@@ -453,13 +544,31 @@ def create_product(db: Session, data: ProductCreate) -> ProductOut:
     return _product_out(p)
 
 
-def update_product(db: Session, product_id: int, data: ProductUpdate) -> ProductOut:
+def update_product(
+    db: Session, product_id: int, data: ProductUpdate, admin: User | None = None
+) -> ProductOut:
     p = _require_product(db, product_id)
     payload = data.model_dump(exclude_unset=True)
     if "category_id" in payload:
         _require_category(db, payload["category_id"])
     if "status" in payload:
         payload["status"] = payload["status"].value
+    # 库存变化单独处理，写 ADMIN_ADJUST 流水
+    new_stock = payload.pop("stock", None)
+    if new_stock is not None and new_stock != p.stock:
+        _write_inventory_log(
+            db,
+            p.id,
+            InventoryChangeType.ADMIN_ADJUST.value,
+            new_stock - p.stock,
+            p.stock,
+            new_stock,
+            operator_id=admin.id if admin else None,
+            remark="管理员调整库存",
+        )
+        p.stock = new_stock
+    elif new_stock is not None:
+        p.stock = new_stock
     for k, v in payload.items():
         setattr(p, k, v)
     db.commit()
@@ -473,3 +582,154 @@ def delete_product(db: Session, product_id: int) -> None:
         raise ConflictError("该商品已被订单引用，请停用而非删除")
     db.delete(p)
     db.commit()
+
+
+def confirm_receipt(db: Session, user_id: int, order_id: int) -> OrderOut:
+    """用户确认收货：已发货 → 已完成。"""
+    order = MallRepository(db).get_order_for_update(order_id)
+    if not order or order.user_id != user_id:
+        raise NotFoundError("订单不存在")
+    if order.status != OrderStatus.SHIPPED.value:
+        raise ConflictError("仅已发货订单可确认收货")
+    order.status = OrderStatus.COMPLETED.value
+    order.completed_at = utcnow()
+    db.commit()
+    return _order_out(order)
+
+
+# ---------------- 收货地址 ----------------
+
+def _address_out(a: UserAddress) -> AddressOut:
+    return AddressOut(
+        id=a.id,
+        receiver_name=a.receiver_name,
+        receiver_phone=a.receiver_phone,
+        province=a.province,
+        city=a.city,
+        district=a.district,
+        detail_address=a.detail_address,
+        is_default=a.is_default,
+    )
+
+
+def list_addresses(db: Session, user_id: int) -> list[AddressOut]:
+    return [_address_out(a) for a in MallRepository(db).list_addresses(user_id)]
+
+
+def create_address(db: Session, user_id: int, data: AddressCreate) -> AddressOut:
+    repo = MallRepository(db)
+    make_default = data.is_default or not repo.list_addresses(user_id)
+    if make_default:
+        repo.clear_default_address(user_id)
+    addr = UserAddress(
+        user_id=user_id,
+        receiver_name=data.receiver_name,
+        receiver_phone=data.receiver_phone,
+        province=data.province,
+        city=data.city,
+        district=data.district,
+        detail_address=data.detail_address,
+        is_default=make_default,
+    )
+    db.add(addr)
+    db.commit()
+    db.refresh(addr)
+    return _address_out(addr)
+
+
+def update_address(
+    db: Session, user_id: int, address_id: int, data: AddressUpdate
+) -> AddressOut:
+    repo = MallRepository(db)
+    addr = repo.get_address(user_id, address_id)
+    if not addr:
+        raise NotFoundError("地址不存在")
+    payload = data.model_dump(exclude_unset=True)
+    if payload.get("is_default"):
+        repo.clear_default_address(user_id)
+    for k, v in payload.items():
+        setattr(addr, k, v)
+    db.commit()
+    db.refresh(addr)
+    return _address_out(addr)
+
+
+def delete_address(db: Session, user_id: int, address_id: int) -> None:
+    repo = MallRepository(db)
+    addr = repo.get_address(user_id, address_id)
+    if not addr:
+        raise NotFoundError("地址不存在")
+    db.delete(addr)
+    db.commit()
+
+
+def set_default_address(db: Session, user_id: int, address_id: int) -> AddressOut:
+    repo = MallRepository(db)
+    addr = repo.get_address(user_id, address_id)
+    if not addr:
+        raise NotFoundError("地址不存在")
+    repo.clear_default_address(user_id)
+    addr.is_default = True
+    db.commit()
+    db.refresh(addr)
+    return _address_out(addr)
+
+
+# ---------------- 定时关单 ----------------
+
+def close_expired_orders(
+    db: Session,
+    now: datetime | None = None,
+    timeout_minutes: int | None = None,
+) -> int:
+    """关闭超时未支付订单并返还库存（幂等，单订单失败不中断整体任务）。
+
+    仅处理状态仍为 PENDING_PAYMENT 且创建时间早于 now - timeout 的订单。
+    每个订单独立事务提交，避免单笔失败影响其余订单。
+    """
+    timeout = (
+        timeout_minutes if timeout_minutes is not None else settings.order_pay_timeout_minutes
+    )
+    deadline = (now or utcnow()) - timedelta(minutes=timeout)
+    repo = MallRepository(db)
+
+    ids = db.execute(
+        select(Order.id).where(
+            Order.status == OrderStatus.PENDING_PAYMENT.value,
+            Order.created_at <= deadline,
+        )
+    ).scalars().all()
+
+    # 清理 identity map 缓存，确保后续 FOR UPDATE 读取到数据库最新库存，而非过期对象
+    db.expire_all()
+
+    closed = 0
+    for oid in ids:
+        try:
+            order = repo.get_order_for_update(oid)
+            if not order or order.status != OrderStatus.PENDING_PAYMENT.value:
+                continue
+            for item in order.items:
+                product = repo.get_product_for_update(item.product_id)
+                if product:
+                    before = product.stock
+                    product.stock += item.quantity
+                    product.sales = max(0, product.sales - item.quantity)
+                    _write_inventory_log(
+                        db,
+                        product.id,
+                        InventoryChangeType.ORDER_RELEASE.value,
+                        item.quantity,
+                        before,
+                        product.stock,
+                        related_order_no=order.order_no,
+                        remark="超时未支付自动关单",
+                    )
+            order.status = OrderStatus.CLOSED.value
+            order.closed_at = utcnow()
+            db.commit()
+            closed += 1
+        except Exception:  # noqa: BLE001
+            db.rollback()
+            logger.exception("超时关单失败 | order_id=%s", oid)
+    return closed

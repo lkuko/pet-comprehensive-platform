@@ -16,6 +16,7 @@ from app.api.public.v1 import adoption as public_adoption
 from app.api.public.v1 import care as public_care
 from app.api.public.v1 import mall as public_mall
 from app.api.public.v1 import medical as public_medical
+from app.api.user.v1 import addresses as user_addresses
 from app.api.user.v1 import adoption_applications as user_adoption_applications
 from app.api.user.v1 import auth as user_auth
 from app.api.user.v1 import care_appointments as user_care_appointments
@@ -38,6 +39,7 @@ user_router.include_router(user_medical_appointments.router)
 user_router.include_router(user_care_appointments.router)
 user_router.include_router(user_cart.router)
 user_router.include_router(user_orders.router)
+user_router.include_router(user_addresses.router)
 api_router.include_router(user_router)
 
 # 管理端

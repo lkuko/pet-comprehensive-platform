@@ -10,10 +10,12 @@ from app.models.care import (  # noqa: F401
     CareServicePackage,
 )
 from app.models.mall import (  # noqa: F401
+    InventoryLog,
     Order,
     OrderItem,
     Product,
     ProductCategory,
+    UserAddress,
 )
 from app.models.medical import (  # noqa: F401
     DoctorSchedule,
@@ -52,4 +54,6 @@ __all__ = [
     "Product",
     "Order",
     "OrderItem",
+    "UserAddress",
+    "InventoryLog",
 ]

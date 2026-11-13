@@ -2,7 +2,10 @@
   <div class="page">
     <AppHeader />
     <main class="container">
-      <h2 class="page-title">我的订单</h2>
+      <div class="head">
+        <h2 class="page-title">我的订单</h2>
+        <el-button text type="primary" @click="$router.push('/addresses')">收货地址</el-button>
+      </div>
 
       <el-empty v-if="!orders.length && !loading" description="暂无订单" />
       <div v-else class="order-list">
@@ -35,6 +38,7 @@
                 <el-button size="small" type="primary" @click="pay(o)">去支付</el-button>
                 <el-button size="small" @click="cancel(o)">取消订单</el-button>
               </template>
+              <el-button v-else-if="o.status === 'SHIPPED'" size="small" type="success" @click="receipt(o)">确认收货</el-button>
             </div>
           </div>
         </el-card>
@@ -47,7 +51,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AppHeader from '../components/AppHeader.vue'
-import { listOrders, payOrder, cancelOrder } from '../api/mall'
+import { listOrders, payOrder, cancelOrder, confirmReceipt } from '../api/mall'
 import { ORDER_STATUS, ORDER_STATUS_TAG } from '../utils/dict'
 
 const orders = ref([])
@@ -80,6 +84,13 @@ async function cancel(o) {
   load()
 }
 
+async function receipt(o) {
+  await ElMessageBox.confirm('确认已收到商品？', '提示', { type: 'warning' })
+  await confirmReceipt(o.id)
+  ElMessage.success('交易完成')
+  load()
+}
+
 onMounted(load)
 </script>
 
@@ -93,8 +104,14 @@ onMounted(load)
   margin: 0 auto;
   padding: 24px;
 }
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
 .page-title {
-  margin: 0 0 16px;
+  margin: 0;
   color: #303133;
 }
 .order-list {

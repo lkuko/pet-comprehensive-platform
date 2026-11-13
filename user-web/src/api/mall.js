@@ -46,3 +46,28 @@ export function payOrder(id) {
 export function cancelOrder(id) {
   return request.post(`/user/orders/${id}/cancel`)
 }
+
+export function confirmReceipt(id) {
+  return request.post(`/user/orders/${id}/confirm-receipt`)
+}
+
+// 收货地址
+export function listAddresses() {
+  return request.get('/user/addresses')
+}
+
+export function createAddress(data) {
+  return request.post('/user/addresses', data)
+}
+
+export function updateAddress(id, data) {
+  return request.put(`/user/addresses/${id}`, data)
+}
+
+export function deleteAddress(id) {
+  return request.delete(`/user/addresses/${id}`)
+}
+
+export function setDefaultAddress(id) {
+  return request.post(`/user/addresses/${id}/default`)
+}

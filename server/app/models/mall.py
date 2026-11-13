@@ -10,6 +10,8 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    BigInteger,
+    Boolean,
     DateTime,
     ForeignKey,
     Index,
@@ -17,6 +19,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -58,13 +61,17 @@ class Product(Base, TimestampMixin):
 
 
 class Order(Base, TimestampMixin):
-    """订单（含收货信息与状态机）。"""
+    """订单（含收货信息、幂等键与状态机）。"""
 
     __tablename__ = "orders"
-    __table_args__ = (Index("ix_orders_user_status", "user_id", "status"),)
+    __table_args__ = (
+        Index("ix_orders_user_status", "user_id", "status"),
+        UniqueConstraint("user_id", "idempotency_key", name="uq_orders_user_idem"),
+    )
 
     id: Mapped[int] = mapped_column(PkType, primary_key=True, autoincrement=True)
     order_no: Mapped[str] = mapped_column(String(40), unique=True, nullable=False)
+    idempotency_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="PENDING_PAYMENT", index=True)
     total_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
@@ -76,6 +83,7 @@ class Order(Base, TimestampMixin):
     shipped_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     user: Mapped["User"] = relationship(lazy="selectin")
     items: Mapped[list["OrderItem"]] = relationship(
@@ -105,3 +113,37 @@ class OrderItem(Base):
     subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
 
     order: Mapped["Order"] = relationship(back_populates="items")
+
+
+class UserAddress(Base, TimestampMixin):
+    """用户收货地址。"""
+
+    __tablename__ = "user_addresses"
+    __table_args__ = (Index("ix_user_addresses_user", "user_id", "is_default"),)
+
+    id: Mapped[int] = mapped_column(PkType, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    receiver_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    receiver_phone: Mapped[str] = mapped_column(String(20), nullable=False)
+    province: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    city: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    district: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    detail_address: Mapped[str] = mapped_column(String(200), nullable=False)
+    is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+class InventoryLog(Base, TimestampMixin):
+    """库存变更流水（每次库存变化必须写一条，扣减记负数、返还/增加记正数）。"""
+
+    __tablename__ = "inventory_logs"
+    __table_args__ = (Index("ix_inventory_logs_product", "product_id", "created_at"),)
+
+    id: Mapped[int] = mapped_column(PkType, primary_key=True, autoincrement=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), nullable=False)
+    change_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    change_quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    before_stock: Mapped[int] = mapped_column(Integer, nullable=False)
+    after_stock: Mapped[int] = mapped_column(Integer, nullable=False)
+    related_order_no: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    operator_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    remark: Mapped[str | None] = mapped_column(String(200), nullable=True)

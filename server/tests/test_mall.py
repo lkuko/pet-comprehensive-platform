@@ -2,15 +2,18 @@
 
 购物车依赖 Redis，测试中以内存 Fake 替换 get_redis（conftest 已把真实 Redis 指向封闭端口）。
 """
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from app.core.security import hash_password
-from app.models.mall import Order, Product, ProductCategory
+from app.models.mall import InventoryLog, Order, Product, ProductCategory
 from app.models.user import User
 from app.services import mall as mall_service
+from app.utils.time import utcnow
 
 LOGIN_URL = "/api/v1/user/auth/login"
 ADMIN_LOGIN_URL = "/api/v1/admin/auth/login"
@@ -18,6 +21,7 @@ PUBLIC_URL = "/api/v1/public/mall"
 CART_URL = "/api/v1/user/cart"
 ORDER_URL = "/api/v1/user/orders"
 ADMIN_URL = "/api/v1/admin/mall"
+ADDRESS_URL = "/api/v1/user/addresses"
 
 
 class FakeRedis:
@@ -319,3 +323,198 @@ def test_admin_crud_category_and_product(client: TestClient, db, fake_redis):
         ADMIN_URL + f"/products/{p['id']}", json={"stock": 50}, headers=admin_headers
     ).json()["data"]
     assert updated["stock"] == 50
+
+
+# ---------------- 收货地址 ----------------
+
+def _address_payload(**kw) -> dict:
+    data = {
+        "receiver_name": "张三",
+        "receiver_phone": "13800000000",
+        "province": "上海市",
+        "city": "上海市",
+        "district": "浦东新区",
+        "detail_address": "测试路 1 号",
+    }
+    data.update(kw)
+    return data
+
+
+def test_address_crud_and_default(client: TestClient, db, fake_redis):
+    headers = _user_headers(client, db)
+    # 第一条自动设为默认
+    a1 = client.post(ADDRESS_URL, json=_address_payload(), headers=headers).json()["data"]
+    assert a1["is_default"] is True
+
+    # 第二条显式设默认，第一条被取消默认
+    a2 = client.post(ADDRESS_URL, json=_address_payload(is_default=True), headers=headers).json()["data"]
+    assert a2["is_default"] is True
+    lst = client.get(ADDRESS_URL, headers=headers).json()["data"]
+    assert lst[0]["id"] == a2["id"]
+    assert lst[1]["id"] == a1["id"]
+    assert lst[1]["is_default"] is False
+
+    # 更新
+    upd = client.put(
+        f"{ADDRESS_URL}/{a1['id']}", json={"detail_address": "新地址 9 号"}, headers=headers
+    ).json()["data"]
+    assert upd["detail_address"] == "新地址 9 号"
+
+    # 切换默认
+    client.post(f"{ADDRESS_URL}/{a1['id']}/default", headers=headers)
+    lst = client.get(ADDRESS_URL, headers=headers).json()["data"]
+    assert lst[0]["id"] == a1["id"]
+    assert lst[0]["is_default"] is True
+
+    # 删除
+    client.delete(f"{ADDRESS_URL}/{a2['id']}", headers=headers)
+    assert len(client.get(ADDRESS_URL, headers=headers).json()["data"]) == 1
+
+
+def test_address_isolation(client: TestClient, db, fake_redis):
+    h1 = _user_headers(client, db, username="ua")
+    h2 = _user_headers(client, db, username="ub")
+    client.post(ADDRESS_URL, json=_address_payload(), headers=h1)
+    assert client.get(ADDRESS_URL, headers=h2).json()["data"] == []
+
+
+# ---------------- 下单幂等键 ----------------
+
+def test_checkout_idempotency(client: TestClient, db, fake_redis):
+    cat = _category(db)
+    p = _product(db, cat, stock=10)
+    headers = _user_headers(client, db)
+    client.post(CART_URL, json={"product_id": p.id, "quantity": 2}, headers=headers)
+
+    payload = _checkout_payload()
+    payload["idempotency_key"] = "idem-001"
+    r1 = client.post(ORDER_URL, json=payload, headers=headers).json()["data"]
+
+    # 购物车已清空，但幂等键命中应返回同一订单，不因购物车空而报错
+    r2 = client.post(ORDER_URL, json=payload, headers=headers).json()["data"]
+    assert r2["id"] == r1["id"]
+    assert r2["order_no"] == r1["order_no"]
+
+    # 库存只扣一次
+    db.expire_all()
+    assert db.get(Product, p.id).stock == 8
+
+
+# ---------------- 库存流水 ----------------
+
+def _inventory_logs(db, product_id: int) -> list[InventoryLog]:
+    return db.execute(
+        select(InventoryLog).where(InventoryLog.product_id == product_id).order_by(InventoryLog.id)
+    ).scalars().all()
+
+
+def test_checkout_writes_deduct_log(client: TestClient, db, fake_redis):
+    cat = _category(db)
+    p = _product(db, cat, stock=10)
+    headers = _user_headers(client, db)
+    client.post(CART_URL, json={"product_id": p.id, "quantity": 3}, headers=headers)
+    client.post(ORDER_URL, json=_checkout_payload(), headers=headers)
+
+    db.expire_all()
+    logs = _inventory_logs(db, p.id)
+    assert len(logs) == 1
+    assert logs[0].change_type == "ORDER_DEDUCT"
+    assert logs[0].change_quantity == -3
+    assert logs[0].before_stock == 10
+    assert logs[0].after_stock == 7
+
+
+def test_cancel_writes_release_log(client: TestClient, db, fake_redis):
+    cat = _category(db)
+    p = _product(db, cat, stock=5)
+    headers = _user_headers(client, db)
+    client.post(CART_URL, json={"product_id": p.id, "quantity": 3}, headers=headers)
+    order_id = client.post(ORDER_URL, json=_checkout_payload(), headers=headers).json()["data"]["id"]
+    client.post(f"{ORDER_URL}/{order_id}/cancel", headers=headers)
+
+    db.expire_all()
+    logs = _inventory_logs(db, p.id)
+    assert len(logs) == 2
+    assert logs[1].change_type == "ORDER_RELEASE"
+    assert logs[1].change_quantity == 3
+    assert logs[1].after_stock == 5
+
+
+def test_admin_adjust_stock_writes_log(client: TestClient, db, fake_redis):
+    admin_headers = _admin_headers(client, db)
+    cat = _category(db)
+    p = _product(db, cat, stock=100)
+    client.put(f"{ADMIN_URL}/products/{p.id}", json={"stock": 150}, headers=admin_headers)
+
+    db.expire_all()
+    logs = _inventory_logs(db, p.id)
+    assert len(logs) == 1
+    assert logs[0].change_type == "ADMIN_ADJUST"
+    assert logs[0].change_quantity == 50
+    assert logs[0].before_stock == 100
+    assert logs[0].after_stock == 150
+
+
+# ---------------- 超时自动关单 ----------------
+
+def test_close_expired_orders(client: TestClient, db, fake_redis):
+    cat = _category(db)
+    p = _product(db, cat, stock=10)
+    headers = _user_headers(client, db)
+    client.post(CART_URL, json={"product_id": p.id, "quantity": 4}, headers=headers)
+    order_id = client.post(ORDER_URL, json=_checkout_payload(), headers=headers).json()["data"]["id"]
+
+    # 模拟时间流逝 31 分钟，触发超时关单
+    closed = mall_service.close_expired_orders(db, now=utcnow() + timedelta(minutes=31))
+    assert closed == 1
+
+    db.expire_all()
+    assert db.get(Order, order_id).status == "CLOSED"
+    assert db.get(Product, p.id).stock == 10  # 库存返还
+    logs = _inventory_logs(db, p.id)
+    assert logs[-1].change_type == "ORDER_RELEASE"
+    assert logs[-1].change_quantity == 4
+
+    # 幂等：再次执行不重复关闭、不重复返还
+    assert mall_service.close_expired_orders(db, now=utcnow() + timedelta(minutes=31)) == 0
+
+
+def test_close_expired_skips_paid(client: TestClient, db, fake_redis):
+    cat = _category(db)
+    p = _product(db, cat)
+    headers = _user_headers(client, db)
+    client.post(CART_URL, json={"product_id": p.id, "quantity": 1}, headers=headers)
+    order_id = client.post(ORDER_URL, json=_checkout_payload(), headers=headers).json()["data"]["id"]
+    client.post(f"{ORDER_URL}/{order_id}/pay", headers=headers)
+
+    assert mall_service.close_expired_orders(db, now=utcnow() + timedelta(minutes=31)) == 0
+    db.expire_all()
+    assert db.get(Order, order_id).status == "PAID"
+
+
+# ---------------- 用户确认收货 ----------------
+
+def test_confirm_receipt(client: TestClient, db, fake_redis):
+    cat = _category(db)
+    p = _product(db, cat)
+    headers = _user_headers(client, db)
+    admin_headers = _admin_headers(client, db)
+    client.post(CART_URL, json={"product_id": p.id, "quantity": 1}, headers=headers)
+    order_id = client.post(ORDER_URL, json=_checkout_payload(), headers=headers).json()["data"]["id"]
+    client.post(f"{ORDER_URL}/{order_id}/pay", headers=headers)
+    client.post(f"{ADMIN_URL}/orders/{order_id}/ship", headers=admin_headers)
+
+    resp = client.post(f"{ORDER_URL}/{order_id}/confirm-receipt", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["data"]["status"] == "COMPLETED"
+    assert resp.json()["data"]["completed_at"] is not None
+
+
+def test_confirm_receipt_requires_shipped(client: TestClient, db, fake_redis):
+    cat = _category(db)
+    p = _product(db, cat)
+    headers = _user_headers(client, db)
+    client.post(CART_URL, json={"product_id": p.id, "quantity": 1}, headers=headers)
+    order_id = client.post(ORDER_URL, json=_checkout_payload(), headers=headers).json()["data"]["id"]
+
+    assert client.post(f"{ORDER_URL}/{order_id}/confirm-receipt", headers=headers).status_code == 409
