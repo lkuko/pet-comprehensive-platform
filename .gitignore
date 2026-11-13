@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 环境与密钥（禁止提交真实密钥）
+.env
+server/.env
+
+# 上传文件（保留目录本身）
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log

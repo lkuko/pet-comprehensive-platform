@@ -1,0 +1,38 @@
+# 基础设施编排：MySQL 8.0 + Redis
+# Day 1 骨架只编排基础组件；后端 / 前端 / Nginx 服务在部署阶段（Day 10）补充。
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: pet-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_change_me}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-pet_platform}
+      MYSQL_USER: ${MYSQL_USER:-pet_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_me}
+      TZ: ${APP_TIMEZONE:-Asia/Shanghai}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    container_name: pet-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_data:
+  redis_data:

@@ -1,0 +1,39 @@
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
+
+// 统一 Axios 实例：baseURL、Token 注入、统一错误处理
+const request = axios.create({
+  baseURL: '/api/v1',
+  timeout: 15000
+})
+
+request.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+request.interceptors.response.use(
+  (response) => {
+    const res = response.data
+    if (res.code !== 0) {
+      ElMessage.error(res.message || '请求失败')
+      return Promise.reject(new Error(res.message || '请求失败'))
+    }
+    return res
+  },
+  (error) => {
+    const status = error.response?.status
+    const message = error.response?.data?.message || '网络异常'
+    if (status === 401) {
+      localStorage.removeItem('token')
+      // TODO: Day 2 接入登录后跳转登录页
+    }
+    ElMessage.error(message)
+    return Promise.reject(error)
+  }
+)
+
+export default request
