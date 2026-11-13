@@ -9,6 +9,7 @@
       <router-link to="/pets" class="nav-link">我的宠物</router-link>
       <router-link to="/applications" class="nav-link">领养申请</router-link>
       <router-link to="/medical" class="nav-link">医疗预约</router-link>
+      <router-link to="/care" class="nav-link">洗护寄养</router-link>
       <router-link to="/medical/mine" class="nav-link">我的预约</router-link>
       <router-link to="/profile" class="nav-link">个人中心</router-link>
     </nav>

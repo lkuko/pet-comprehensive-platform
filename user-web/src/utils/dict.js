@@ -54,3 +54,24 @@ export const ENABLE_STATUS = {
   ACTIVE: '启用',
   INACTIVE: '停用'
 }
+
+export const SERVICE_TYPE = {
+  GROOMING: '洗护美容',
+  BOARDING: '寄养'
+}
+
+export const CARE_APP_STATUS = {
+  PENDING_CONFIRMATION: '待确认',
+  CONFIRMED: '已确认',
+  REJECTED: '已拒绝',
+  CANCELLED: '已取消',
+  COMPLETED: '已完成'
+}
+
+export const CARE_APP_STATUS_TAG = {
+  PENDING_CONFIRMATION: 'warning',
+  CONFIRMED: 'success',
+  REJECTED: 'danger',
+  CANCELLED: 'info',
+  COMPLETED: 'info'
+}

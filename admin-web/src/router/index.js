@@ -31,6 +31,18 @@ const routes = [
     name: 'medicalAppointments',
     component: () => import('../views/MedicalAppointments.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/care',
+    name: 'careResources',
+    component: () => import('../views/CareResources.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/care/appointments',
+    name: 'careAppointments',
+    component: () => import('../views/CareAppointments.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

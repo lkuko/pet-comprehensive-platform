@@ -81,3 +81,24 @@ class MedicalAppointmentStatus(StrEnum):
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     COMPLETED = "COMPLETED"
+
+
+class ServiceType(StrEnum):
+    """洗护/寄养服务类型。"""
+
+    GROOMING = "GROOMING"
+    BOARDING = "BOARDING"
+
+
+class CareAppointmentStatus(StrEnum):
+    """洗护/寄养预约状态机（复用医疗预约语义）。
+
+    PENDING_CONFIRMATION → CONFIRMED / REJECTED / CANCELLED；
+    CONFIRMED → COMPLETED。
+    """
+
+    PENDING_CONFIRMATION = "PENDING_CONFIRMATION"
+    CONFIRMED = "CONFIRMED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+    COMPLETED = "COMPLETED"

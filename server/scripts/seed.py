@@ -16,6 +16,7 @@ from app.common.enums import AdoptionPetStatus, UserRole, UserStatus
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.security import hash_password
+from app.models.care import CareServiceCategory, CareServicePackage
 from app.models.medical import (
     DoctorSchedule,
     MedicalDoctor,
@@ -239,6 +240,64 @@ def seed_medical(db: Session) -> None:
         print("医生排班已存在（未来排班），跳过。")
 
 
+# 洗护/寄养分类与套餐（演示数据）
+# (名称, 类型 GROOMING/BOARDING, 说明, 排序)
+_CARE_CATEGORIES = [
+    ("洗浴清洁", "GROOMING", "宠物基础洗浴、深层清洁与 SPA 护理", 1),
+    ("美容造型", "GROOMING", "修剪造型、毛发护理与精致美容", 2),
+    ("寄养", "BOARDING", "宠物短期寄养，提供住宿、喂食与遛弯", 3),
+]
+
+# (所属分类名称, 套餐名, 说明, 价格, 时长分钟；寄养时长为 0 表示按天计费)
+_CARE_PACKAGES = [
+    ("洗浴清洁", "基础洗浴", "常规洗浴 + 吹干 + 耳道清洁", "50.00", 40),
+    ("洗浴清洁", "深层清洁", "深层清洁 + 护毛素 + 指甲修剪", "120.00", 70),
+    ("美容造型", "基础美容", "修剪 + 造型 + 基础护理", "150.00", 90),
+    ("美容造型", "精致造型", "精致修剪 + 造型 + SPA", "260.00", 120),
+    ("寄养", "标准寄养", "标准笼舍 + 每日喂食 + 遛弯", "60.00", 0),
+    ("寄养", "豪华寄养", "独立房 + 每日视频 + 营养餐", "100.00", 0),
+]
+
+
+def seed_care(db: Session) -> None:
+    """幂等创建洗护/寄养分类与套餐。"""
+    categories: dict[str, CareServiceCategory] = {}
+    for name, service_type, desc, sort in _CARE_CATEGORIES:
+        existing = db.scalar(
+            select(CareServiceCategory).where(CareServiceCategory.name == name)
+        )
+        if existing:
+            categories[name] = existing
+            continue
+        cat = CareServiceCategory(
+            name=name, service_type=service_type, description=desc,
+            sort=sort, status="ACTIVE",
+        )
+        db.add(cat)
+        db.flush()
+        categories[name] = cat
+        print(f"服务分类 '{name}' 创建成功。")
+
+    created = 0
+    for cat_name, name, desc, price, duration in _CARE_PACKAGES:
+        existing = db.scalar(
+            select(CareServicePackage).where(CareServicePackage.name == name)
+        )
+        if existing:
+            continue
+        pkg = CareServicePackage(
+            category_id=categories[cat_name].id,
+            name=name, description=desc, price=price,
+            duration_minutes=duration, status="ACTIVE",
+        )
+        db.add(pkg)
+        created += 1
+    if created:
+        print(f"服务套餐创建 {created} 条（幂等，已存在的跳过）。")
+    else:
+        print("服务套餐已存在，跳过。")
+
+
 def main() -> None:
     if settings.is_production:
         print("拒绝执行：生产环境不允许自动初始化演示数据。")
@@ -250,6 +309,7 @@ def main() -> None:
         categories = seed_categories(db)
         seed_pets(db, categories)
         seed_medical(db)
+        seed_care(db)
         db.commit()
         print("初始化数据完成。")
     except Exception:

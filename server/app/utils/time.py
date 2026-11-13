@@ -38,3 +38,13 @@ def combine_business_time(day: date, t: time) -> datetime:
     """
     local = datetime.combine(day, t, tzinfo=business_tz())
     return local.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def to_utc_naive(dt: datetime) -> datetime:
+    """任意 datetime（naive 按业务时区解释）→ 无时区 UTC datetime。
+
+    用于接收用户提交的预约时间等具体时刻，统一转 UTC 落库。
+    """
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=business_tz())
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)

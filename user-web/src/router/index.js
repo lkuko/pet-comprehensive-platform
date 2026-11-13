@@ -34,6 +34,18 @@ const routes = [
     name: 'myMedical',
     component: () => import('../views/MyMedical.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/care',
+    name: 'care',
+    component: () => import('../views/Care.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/care/mine',
+    name: 'myCare',
+    component: () => import('../views/MyCare.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

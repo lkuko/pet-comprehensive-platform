@@ -9,7 +9,9 @@
       <router-link to="/pets" class="nav-link">宠物管理</router-link>
       <router-link to="/applications" class="nav-link">申请审核</router-link>
       <router-link to="/medical" class="nav-link">医疗管理</router-link>
-      <router-link to="/medical/appointments" class="nav-link">预约处理</router-link>
+      <router-link to="/medical/appointments" class="nav-link">医疗预约</router-link>
+      <router-link to="/care" class="nav-link">洗护寄养管理</router-link>
+      <router-link to="/care/appointments" class="nav-link">洗护寄养预约</router-link>
     </nav>
     <div class="right">
       <span class="nickname">{{ auth.user?.nickname || auth.user?.username }}</span>
