@@ -26,14 +26,21 @@
 | 40900 | 409 | 状态冲突 |
 | 50000 | 500 | 服务异常 |
 
-## 当前已实现接口（Day 1）
+## 当前已实现接口
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | `/health` | 存活探针 |
 | GET | `/health/ready` | 就绪探针（MySQL + Redis 连通性） |
 | GET | `/api/v1/ping` | 冒烟接口，验证统一响应与路由挂载 |
+| POST | `/api/v1/user/auth/register` | 用户注册（返回 JWT） |
+| POST | `/api/v1/user/auth/login` | 用户登录（返回 JWT） |
+| POST | `/api/v1/admin/auth/login` | 管理员登录（仅 ADMIN 角色） |
+| GET | `/api/v1/user/profile` | 当前用户资料（USER/ADMIN） |
+| PUT | `/api/v1/user/profile` | 修改个人资料（USER/ADMIN） |
 
 ## 认证
 
-JWT 认证与 `USER`/`ADMIN` 角色校验在 Day 2 落地；请求头 `Authorization: Bearer <token>`。
+- JWT 认证，请求头 `Authorization: Bearer <token>`。
+- 角色 `USER` / `ADMIN`；JWT 仅存 `sub`（用户 ID），角色与状态由依赖实时查库校验（禁用用户立即失效）。
+- 管理员账号由 seed 脚本创建（密码走环境变量），不允许公开注册管理员。

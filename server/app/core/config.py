@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     redis_password: str = ""
 
     # --- JWT ---
-    jwt_secret_key: str = "replace_with_long_random_secret"
+    jwt_secret_key: str = "replace_with_a_long_random_secret_key_32bytes"
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 120
 
@@ -58,6 +58,10 @@ class Settings(BaseSettings):
 
     # --- 订单 ---
     order_pay_timeout_minutes: int = 30
+
+    # --- Seed 管理员（仅 development/test 创建；密码走环境变量，禁止写死） ---
+    admin_seed_username: str = "admin"
+    admin_seed_password: str = ""
 
     # --- CORS 白名单 ---
     user_web_origin: str = "http://localhost:5173"

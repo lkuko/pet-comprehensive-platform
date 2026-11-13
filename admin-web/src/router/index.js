@@ -1,16 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
+  { path: '/login', name: 'login', component: () => import('../views/Login.vue') },
   {
     path: '/',
-    name: 'home',
-    component: () => import('../views/Home.vue')
+    name: 'dashboard',
+    component: () => import('../views/Dashboard.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// 路由守卫：未登录跳转登录页
+router.beforeEach((to) => {
+  const token = localStorage.getItem('token')
+  if (to.meta.requiresAuth && !token) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  return true
 })
 
 export default router

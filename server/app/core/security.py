@@ -1,14 +1,25 @@
-"""安全基础能力：JWT 编解码。
+"""安全基础能力：密码哈希与 JWT 编解码。
 
-本模块仅提供无业务依赖的基础原语。
-密码哈希（Passlib + bcrypt）在 Day 2 认证模块引入，届时在此文件补充 hash_password / verify_password。
+密码使用 Passlib(bcrypt) 哈希，数据库永不保存明文。
+JWT 仅携带 sub（用户 ID）；角色与状态在依赖中实时查库校验。
 """
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import jwt
+from passlib.context import CryptContext
 
 from app.core.config import settings
+
+_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(password: str) -> str:
+    return _pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, password_hash: str) -> bool:
+    return _pwd_context.verify(plain_password, password_hash)
 
 
 def create_access_token(subject: str | int, extra: dict[str, Any] | None = None) -> str:

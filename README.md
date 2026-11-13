@@ -2,7 +2,7 @@
 
 基于前后端分离架构的宠物综合服务平台，覆盖宠物领养、宠物医疗预约、洗护/寄养服务预约、宠物用品商城四条核心业务线。
 
-> 开发基线以 `docs/计划初稿.md` 为唯一依据。当前仓库处于 **Day 1 工程骨架** 阶段，业务模块将在后续阶段增量落地。
+> 开发基线以 `docs/计划初稿.md` 为唯一依据。当前进度：Day 1 工程骨架 + Day 2 认证已完成，业务模块将在后续阶段增量落地。
 
 ## 技术栈
 
@@ -43,12 +43,15 @@ python -m venv .venv
 pip install -r requirements.txt
 cp ../.env.example .env         # 后端本地开发读取 server/.env
 alembic upgrade head            # 初始化数据库结构
+# 初始化管理员（仅开发/测试环境；密码通过环境变量注入，禁止写死）
+ADMIN_SEED_PASSWORD=你的密码 python -m scripts.seed
 uvicorn app.main:app --reload   # 默认 http://localhost:8000
 ```
 
 - 存活探针：`GET /health`
 - 就绪探针：`GET /health/ready`（校验 MySQL + Redis 连通）
 - 接口文档：`http://localhost:8000/docs`
+- 管理员账号：`admin`（密码为 seed 时设置的 `ADMIN_SEED_PASSWORD`）；普通用户通过注册接口自行注册
 
 ### 3. 前端
 
@@ -77,6 +80,7 @@ pytest
 ## 当前进度
 
 - [x] Day 1 工程骨架：配置分环境、MySQL/Redis 连接、SQLAlchemy Base/Session、Alembic 迁移、统一响应/异常/日志/请求 ID、pytest 基建、双前端壳
-- [ ] Day 2+ 认证、宠物档案、领养、医疗预约、洗护寄养、商城等业务模块
+- [x] Day 2 认证：User 模型、注册/登录/管理员登录、密码哈希（bcrypt）、JWT + 角色依赖、seed 管理员、两端登录页/路由守卫/个人中心
+- [ ] Day 3+ 宠物档案、领养、医疗预约、洗护寄养、商城等业务模块
 
 详细开发计划见 `docs/项目计划与结构.md`。
