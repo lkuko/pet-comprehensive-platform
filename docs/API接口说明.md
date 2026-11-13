@@ -52,6 +52,13 @@
 | GET | `/api/v1/admin/adoption-pets/{id}` | 宠物详情（ADMIN，任意状态） |
 | PUT | `/api/v1/admin/adoption-pets/{id}` | 编辑领养宠物（ADMIN） |
 | PATCH | `/api/v1/admin/adoption-pets/{id}/status` | 上下架（ADMIN） |
+| POST | `/api/v1/user/adoption-applications` | 提交领养申请（USER，仅 AVAILABLE 宠物、同一用户同一宠物仅一条待审核） |
+| GET | `/api/v1/user/adoption-applications` | 我的申请列表（USER） |
+| GET | `/api/v1/user/adoption-applications/{id}` | 申请详情（所属 USER） |
+| POST | `/api/v1/user/adoption-applications/{id}/cancel` | 撤回待审核申请（所属 USER） |
+| GET | `/api/v1/admin/adoption-applications` | 申请审核列表（ADMIN，支持 status/pet_id/keyword 筛选） |
+| POST | `/api/v1/admin/adoption-applications/{id}/approve` | 审核通过（ADMIN；宠物→已领养，同宠物其他待审核申请→关闭） |
+| POST | `/api/v1/admin/adoption-applications/{id}/reject` | 审核拒绝（ADMIN；必须填写原因） |
 
 ## 认证
 

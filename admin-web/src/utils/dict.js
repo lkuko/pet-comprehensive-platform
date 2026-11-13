@@ -18,3 +18,19 @@ export const ADOPT_STATUS_TAG = {
   OFFLINE: 'warning',
   ADOPTED: 'danger'
 }
+
+export const APP_STATUS = {
+  PENDING: '待审核',
+  APPROVED: '已通过',
+  REJECTED: '已拒绝',
+  CANCELLED: '已撤回',
+  CLOSED: '已关闭'
+}
+
+export const APP_STATUS_TAG = {
+  PENDING: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'danger',
+  CANCELLED: 'info',
+  CLOSED: 'info'
+}

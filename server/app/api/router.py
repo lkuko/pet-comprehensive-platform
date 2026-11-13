@@ -7,8 +7,10 @@ from fastapi import APIRouter
 
 from app.api import upload
 from app.api.admin.v1 import adoption as admin_adoption
+from app.api.admin.v1 import adoption_applications as admin_adoption_applications
 from app.api.admin.v1 import auth as admin_auth
 from app.api.public.v1 import adoption as public_adoption
+from app.api.user.v1 import adoption_applications as user_adoption_applications
 from app.api.user.v1 import auth as user_auth
 from app.api.user.v1 import pets as user_pets
 from app.api.user.v1 import profile as user_profile
@@ -21,12 +23,14 @@ user_router = APIRouter(prefix="/user")
 user_router.include_router(user_auth.router)
 user_router.include_router(user_profile.router)
 user_router.include_router(user_pets.router)
+user_router.include_router(user_adoption_applications.router)
 api_router.include_router(user_router)
 
 # 管理端
 admin_router = APIRouter(prefix="/admin")
 admin_router.include_router(admin_auth.router)
 admin_router.include_router(admin_adoption.router)
+admin_router.include_router(admin_adoption_applications.router)
 api_router.include_router(admin_router)
 
 # 公开端（游客可访问）

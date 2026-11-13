@@ -46,3 +46,17 @@ class AdoptionPetStatus(StrEnum):
     AVAILABLE = "AVAILABLE"
     OFFLINE = "OFFLINE"
     ADOPTED = "ADOPTED"
+
+
+class AdoptionApplicationStatus(StrEnum):
+    """领养申请状态机。
+
+    PENDING → APPROVED / REJECTED / CANCELLED / CLOSED。
+    CLOSED 表示同宠物其他申请已通过而自动关闭。
+    """
+
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+    CLOSED = "CLOSED"

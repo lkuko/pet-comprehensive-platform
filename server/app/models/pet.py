@@ -1,7 +1,8 @@
 """宠物档案与领养相关模型。
 
 表：user_pets（用户宠物）、pet_categories（领养分类）、
-    adoption_pets（平台领养宠物）、adoption_pet_images（领养宠物图片）。
+    adoption_pets（平台领养宠物）、adoption_pet_images（领养宠物图片）、
+    adoption_applications（领养申请）。
 """
 from datetime import date, datetime
 from decimal import Decimal
@@ -11,6 +12,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -101,3 +103,39 @@ class AdoptionPetImage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
 
     pet: Mapped["AdoptionPet"] = relationship(back_populates="images")
+
+
+class AdoptionApplication(Base, TimestampMixin):
+    """领养申请及审核信息。"""
+
+    __tablename__ = "adoption_applications"
+    __table_args__ = (
+        Index("ix_aa_user_status", "user_id", "status"),
+        Index("ix_aa_pet_status", "adoption_pet_id", "status"),
+    )
+
+    id: Mapped[int] = mapped_column(PkType, primary_key=True, autoincrement=True)
+    application_no: Mapped[str] = mapped_column(String(40), unique=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    adoption_pet_id: Mapped[int] = mapped_column(
+        ForeignKey("adoption_pets.id"), nullable=False, index=True
+    )
+    contact_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    contact_phone: Mapped[str] = mapped_column(String(20), nullable=False)
+    living_environment: Mapped[str] = mapped_column(String(500), nullable=False)
+    pet_experience: Mapped[str | None] = mapped_column(Text, nullable=True)
+    application_reason: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="PENDING", index=True
+    )
+    review_comment: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    reviewer_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    user: Mapped["User"] = relationship(
+        lazy="selectin", foreign_keys="AdoptionApplication.user_id"
+    )
+    reviewer: Mapped["User | None"] = relationship(
+        lazy="selectin", foreign_keys="AdoptionApplication.reviewer_id"
+    )
+    pet: Mapped["AdoptionPet"] = relationship(lazy="selectin")

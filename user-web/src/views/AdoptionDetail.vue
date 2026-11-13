@@ -36,6 +36,16 @@
               <el-descriptions-item label="绝育">{{ pet.neutered ? '已绝育' : '未绝育' }}</el-descriptions-item>
               <el-descriptions-item label="地区">{{ pet.region || '—' }}</el-descriptions-item>
             </el-descriptions>
+
+            <div class="apply-bar">
+              <el-button
+                v-if="pet.status === 'AVAILABLE'"
+                type="primary"
+                size="large"
+                @click="openApply"
+              >申请领养</el-button>
+              <el-tag v-else type="info" size="large">该宠物当前不可申请</el-tag>
+            </div>
           </div>
         </div>
 
@@ -53,19 +63,66 @@
         </div>
       </template>
     </main>
+
+    <el-dialog v-model="applyVisible" title="申请领养" width="520px" @closed="resetForm">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+        <el-form-item label="联系人" prop="contact_name">
+          <el-input v-model="form.contact_name" placeholder="请输入联系人姓名" />
+        </el-form-item>
+        <el-form-item label="联系电话" prop="contact_phone">
+          <el-input v-model="form.contact_phone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="居住环境" prop="living_environment">
+          <el-input v-model="form.living_environment" placeholder="如：两居室、有阳台、可封窗等" />
+        </el-form-item>
+        <el-form-item label="养宠经验" prop="pet_experience">
+          <el-input v-model="form.pet_experience" type="textarea" :rows="2" placeholder="可填写过往养宠经历（选填）" />
+        </el-form-item>
+        <el-form-item label="申请理由" prop="application_reason">
+          <el-input v-model="form.application_reason" type="textarea" :rows="3" placeholder="请说明想领养它的原因" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="applyVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="submitApply">提交申请</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import AppHeader from '../components/AppHeader.vue'
 import { getPet } from '../api/adoption'
+import { createApplication } from '../api/applications'
 import { GENDER, ADOPT_STATUS } from '../utils/dict'
+import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
 const pet = ref(null)
 const loading = ref(false)
+const applyVisible = ref(false)
+const submitting = ref(false)
+const formRef = ref(null)
+
+const form = reactive({
+  contact_name: '',
+  contact_phone: '',
+  living_environment: '',
+  pet_experience: '',
+  application_reason: ''
+})
+
+const rules = {
+  contact_name: [{ required: true, message: '请输入联系人姓名', trigger: 'blur' }],
+  contact_phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
+  living_environment: [{ required: true, message: '请填写居住环境', trigger: 'blur' }],
+  application_reason: [{ required: true, message: '请填写申请理由', trigger: 'blur' }]
+}
 
 const activeImage = computed(() => (pet.value && pet.value.images.length ? pet.value.images[0] : ''))
 
@@ -75,6 +132,43 @@ async function load() {
     pet.value = (await getPet(route.params.id)).data
   } finally {
     loading.value = false
+  }
+}
+
+function openApply() {
+  if (!auth.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+    return
+  }
+  form.adoption_pet_id = pet.value.id
+  applyVisible.value = true
+}
+
+function resetForm() {
+  form.contact_name = ''
+  form.contact_phone = ''
+  form.living_environment = ''
+  form.pet_experience = ''
+  form.application_reason = ''
+}
+
+async function submitApply() {
+  await formRef.value.validate()
+  submitting.value = true
+  try {
+    await createApplication({
+      adoption_pet_id: pet.value.id,
+      contact_name: form.contact_name,
+      contact_phone: form.contact_phone,
+      living_environment: form.living_environment,
+      pet_experience: form.pet_experience,
+      application_reason: form.application_reason
+    })
+    ElMessage.success('申请已提交，请耐心等待审核')
+    applyVisible.value = false
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -144,6 +238,9 @@ onMounted(load)
 }
 .title-row h2 {
   margin: 0;
+}
+.apply-bar {
+  margin-top: 16px;
 }
 .section {
   background: #fff;

@@ -5,6 +5,7 @@ Alembic autogenerate 依赖此文件导入所有模型以发现表结构。
 """
 from app.models.base import Base, TimestampMixin  # noqa: F401
 from app.models.pet import (  # noqa: F401
+    AdoptionApplication,
     AdoptionPet,
     AdoptionPetImage,
     PetCategory,
@@ -20,4 +21,5 @@ __all__ = [
     "PetCategory",
     "AdoptionPet",
     "AdoptionPetImage",
+    "AdoptionApplication",
 ]

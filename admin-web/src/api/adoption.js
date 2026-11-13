@@ -24,3 +24,16 @@ export function updateStatus(id, status) {
 export function listCategories() {
   return request.get('/public/pet-categories')
 }
+
+// 管理端领养申请审核 API
+export function listApplications(params) {
+  return request.get('/admin/adoption-applications', { params })
+}
+
+export function approveApplication(id) {
+  return request.post(`/admin/adoption-applications/${id}/approve`)
+}
+
+export function rejectApplication(id, reviewComment) {
+  return request.post(`/admin/adoption-applications/${id}/reject`, { review_comment: reviewComment })
+}

@@ -1,4 +1,4 @@
-"""领养相关 Schema：分类、领养宠物、图片。"""
+"""领养相关 Schema：分类、领养宠物、图片、领养申请。"""
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.common.enums import AdoptionPetStatus, PetGender
@@ -82,3 +82,40 @@ class AdoptionPetDetail(AdoptionPetListItem):
     images: list[str]
     created_at: str
     updated_at: str
+
+
+# ---------------- 领养申请 ----------------
+
+class AdoptionApplicationCreate(BaseModel):
+    adoption_pet_id: int
+    contact_name: str = Field(min_length=1, max_length=50)
+    contact_phone: str = Field(min_length=1, max_length=20)
+    living_environment: str = Field(min_length=1, max_length=500)
+    pet_experience: str | None = None
+    application_reason: str = Field(min_length=1)
+
+
+class AdoptionApplicationReject(BaseModel):
+    review_comment: str = Field(min_length=1, max_length=500)
+
+
+class AdoptionApplicationOut(BaseModel):
+    """申请详情（用户端/管理端共用）。"""
+
+    id: int
+    application_no: str
+    user_id: int
+    user_nickname: str
+    adoption_pet_id: int
+    pet_name: str
+    pet_cover_url: str | None
+    contact_name: str
+    contact_phone: str
+    living_environment: str
+    pet_experience: str | None
+    application_reason: str
+    status: str
+    review_comment: str | None
+    reviewer_id: int | None
+    reviewed_at: str | None
+    created_at: str
