@@ -8,6 +8,8 @@
       <router-link to="/" class="nav-link">工作台</router-link>
       <router-link to="/pets" class="nav-link">宠物管理</router-link>
       <router-link to="/applications" class="nav-link">申请审核</router-link>
+      <router-link to="/medical" class="nav-link">医疗管理</router-link>
+      <router-link to="/medical/appointments" class="nav-link">预约处理</router-link>
     </nav>
     <div class="right">
       <span class="nickname">{{ auth.user?.nickname || auth.user?.username }}</span>

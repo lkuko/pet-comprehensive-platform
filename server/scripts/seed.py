@@ -1,4 +1,4 @@
-"""初始化脚本：幂等创建管理员、领养分类与演示领养宠物。
+"""初始化脚本：幂等创建管理员、领养分类/宠物、医疗资源与排班。
 
 仅允许在 development/test 环境执行；生产环境直接拒绝。
 管理员密码通过环境变量 ADMIN_SEED_PASSWORD 注入，不得写死在源码。
@@ -7,6 +7,7 @@
     ADMIN_SEED_PASSWORD=你的密码 python -m scripts.seed
 """
 import sys
+from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -15,9 +16,15 @@ from app.common.enums import AdoptionPetStatus, UserRole, UserStatus
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.security import hash_password
+from app.models.medical import (
+    DoctorSchedule,
+    MedicalDoctor,
+    MedicalLocation,
+    MedicalService,
+)
 from app.models.pet import AdoptionPet, PetCategory
 from app.models.user import User
-from app.utils.time import utcnow
+from app.utils.time import business_tz, utcnow
 
 # (名称, 排序)
 _CATEGORIES = [("猫", 1), ("狗", 2), ("其他", 3)]
@@ -128,6 +135,110 @@ def seed_pets(db: Session, categories: dict[str, PetCategory]) -> None:
     print(f"演示领养宠物创建 {created} 条（幂等，已存在的跳过）。")
 
 
+# 医疗点、医生、医疗项目（演示数据）
+_MEDICAL_LOCATIONS = [
+    ("爱宠宠物医院（总院）", "上海市徐汇区淮海西路 100 号", "021-88886666",
+     "综合宠物医院，提供体检、疫苗、驱虫与基础诊疗预约。"),
+    ("爱宠宠物医院（分院）", "上海市浦东新区张江路 200 号", "021-66668888",
+     "社区型宠物诊所，提供常见病诊疗与免疫服务。"),
+]
+
+# (所属医疗点名称, 姓名, 职称, 擅长)
+_MEDICAL_DOCTORS = [
+    ("爱宠宠物医院（总院）", "张伟", "主治医师", "擅长犬猫内科、传染病诊治与免疫"),
+    ("爱宠宠物医院（总院）", "李娜", "副主任医师", "擅长宠物外科手术与术后护理"),
+    ("爱宠宠物医院（分院）", "王强", "执业兽医师", "擅长皮肤科、驱虫与日常保健"),
+]
+
+# (名称, 说明, 参考价, 时长分钟)
+_MEDICAL_SERVICES = [
+    ("基础体检", "血常规、体温、心肺听诊等基础检查", "99.00", 30),
+    ("疫苗接种", "狂犬、猫三联/犬五联等疫苗接种", "150.00", 20),
+    ("体内外驱虫", "体内外寄生虫预防与驱除", "80.00", 15),
+]
+
+# 排班时段模板（业务时区时刻）
+_SCHEDULE_SLOTS = [(time(9, 0), time(10, 0)), (time(14, 0), time(15, 0))]
+_SCHEDULE_DAYS = 7  # 未来 7 天
+_SCHEDULE_CAPACITY = 3
+
+
+def seed_medical(db: Session) -> None:
+    """幂等创建医疗点、医生、医疗项目与未来 7 天排班。"""
+    # 医疗点
+    locations: dict[str, MedicalLocation] = {}
+    for name, address, phone, desc in _MEDICAL_LOCATIONS:
+        existing = db.scalar(select(MedicalLocation).where(MedicalLocation.name == name))
+        if existing:
+            locations[name] = existing
+            continue
+        loc = MedicalLocation(name=name, address=address, phone=phone, description=desc, status="ACTIVE")
+        db.add(loc)
+        db.flush()
+        locations[name] = loc
+        print(f"医疗点 '{name}' 创建成功。")
+
+    # 医生
+    doctors: dict[str, MedicalDoctor] = {}
+    for loc_name, name, title, specialty in _MEDICAL_DOCTORS:
+        existing = db.scalar(select(MedicalDoctor).where(MedicalDoctor.name == name))
+        if existing:
+            doctors[name] = existing
+            continue
+        doc = MedicalDoctor(
+            location_id=locations[loc_name].id,
+            name=name, title=title, specialty=specialty, status="ACTIVE",
+        )
+        db.add(doc)
+        db.flush()
+        doctors[name] = doc
+        print(f"医生 '{name}' 创建成功。")
+
+    # 医疗项目
+    for name, desc, price, duration in _MEDICAL_SERVICES:
+        existing = db.scalar(select(MedicalService).where(MedicalService.name == name))
+        if existing:
+            continue
+        svc = MedicalService(
+            name=name, description=desc, reference_price=price,
+            duration_minutes=duration, status="ACTIVE",
+        )
+        db.add(svc)
+        print(f"医疗项目 '{name}' 创建成功。")
+
+    # 排班：每个医生生成未来 7 天排班（已存在未来排班则跳过该医生，保证幂等）
+    today = datetime.now(business_tz()).date()
+    created = 0
+    for doc in doctors.values():
+        has_future = db.scalar(
+            select(DoctorSchedule.id).where(
+                DoctorSchedule.doctor_id == doc.id,
+                DoctorSchedule.schedule_date >= today,
+            ).limit(1)
+        )
+        if has_future:
+            continue
+        for offset in range(1, _SCHEDULE_DAYS + 1):
+            day = today + timedelta(days=offset)
+            for start, end in _SCHEDULE_SLOTS:
+                s = DoctorSchedule(
+                    doctor_id=doc.id,
+                    location_id=doc.location_id,
+                    schedule_date=day,
+                    start_time=start,
+                    end_time=end,
+                    capacity=_SCHEDULE_CAPACITY,
+                    booked_count=0,
+                    status="ACTIVE",
+                )
+                db.add(s)
+                created += 1
+    if created:
+        print(f"医生排班创建 {created} 条（未来 {_SCHEDULE_DAYS} 天）。")
+    else:
+        print("医生排班已存在（未来排班），跳过。")
+
+
 def main() -> None:
     if settings.is_production:
         print("拒绝执行：生产环境不允许自动初始化演示数据。")
@@ -138,6 +249,7 @@ def main() -> None:
         seed_admin(db)
         categories = seed_categories(db)
         seed_pets(db, categories)
+        seed_medical(db)
         db.commit()
         print("初始化数据完成。")
     except Exception:

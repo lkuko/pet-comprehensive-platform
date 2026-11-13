@@ -22,6 +22,18 @@ const routes = [
     name: 'applications',
     component: () => import('../views/MyApplications.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical',
+    name: 'medical',
+    component: () => import('../views/Medical.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/medical/mine',
+    name: 'myMedical',
+    component: () => import('../views/MyMedical.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

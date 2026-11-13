@@ -60,3 +60,24 @@ class AdoptionApplicationStatus(StrEnum):
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     CLOSED = "CLOSED"
+
+
+class EnableStatus(StrEnum):
+    """通用启用状态（医疗点/医生/医疗项目/排班复用）。"""
+
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+
+
+class MedicalAppointmentStatus(StrEnum):
+    """医疗预约状态机。
+
+    PENDING_CONFIRMATION → CONFIRMED / REJECTED / CANCELLED；
+    CONFIRMED → COMPLETED。取消与拒绝均释放排班名额，完成后不再释放。
+    """
+
+    PENDING_CONFIRMATION = "PENDING_CONFIRMATION"
+    CONFIRMED = "CONFIRMED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+    COMPLETED = "COMPLETED"

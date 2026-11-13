@@ -9,9 +9,12 @@ from app.api import upload
 from app.api.admin.v1 import adoption as admin_adoption
 from app.api.admin.v1 import adoption_applications as admin_adoption_applications
 from app.api.admin.v1 import auth as admin_auth
+from app.api.admin.v1 import medical as admin_medical
 from app.api.public.v1 import adoption as public_adoption
+from app.api.public.v1 import medical as public_medical
 from app.api.user.v1 import adoption_applications as user_adoption_applications
 from app.api.user.v1 import auth as user_auth
+from app.api.user.v1 import medical_appointments as user_medical_appointments
 from app.api.user.v1 import pets as user_pets
 from app.api.user.v1 import profile as user_profile
 from app.common.response import ok
@@ -24,6 +27,7 @@ user_router.include_router(user_auth.router)
 user_router.include_router(user_profile.router)
 user_router.include_router(user_pets.router)
 user_router.include_router(user_adoption_applications.router)
+user_router.include_router(user_medical_appointments.router)
 api_router.include_router(user_router)
 
 # 管理端
@@ -31,11 +35,13 @@ admin_router = APIRouter(prefix="/admin")
 admin_router.include_router(admin_auth.router)
 admin_router.include_router(admin_adoption.router)
 admin_router.include_router(admin_adoption_applications.router)
+admin_router.include_router(admin_medical.router)
 api_router.include_router(admin_router)
 
 # 公开端（游客可访问）
 public_router = APIRouter(prefix="/public")
 public_router.include_router(public_adoption.router)
+public_router.include_router(public_medical.router)
 api_router.include_router(public_router)
 
 # 通用上传（登录用户可用）

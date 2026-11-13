@@ -59,6 +59,22 @@
 | GET | `/api/v1/admin/adoption-applications` | 申请审核列表（ADMIN，支持 status/pet_id/keyword 筛选） |
 | POST | `/api/v1/admin/adoption-applications/{id}/approve` | 审核通过（ADMIN；宠物→已领养，同宠物其他待审核申请→关闭） |
 | POST | `/api/v1/admin/adoption-applications/{id}/reject` | 审核拒绝（ADMIN；必须填写原因） |
+| GET | `/api/v1/public/medical/locations` | 医疗点列表（游客，仅启用） |
+| GET | `/api/v1/public/medical/doctors` | 医生列表（游客，仅启用，可按医疗点过滤） |
+| GET | `/api/v1/public/medical/services` | 医疗项目列表（游客，仅启用） |
+| GET | `/api/v1/public/medical/schedules` | 可预约时段（游客，仅启用/未满额/未过期） |
+| POST | `/api/v1/user/medical/appointments` | 提交医疗预约（USER；FOR UPDATE 锁排班防超卖，同一时段防重复） |
+| GET | `/api/v1/user/medical/appointments` | 我的医疗预约（USER） |
+| GET | `/api/v1/user/medical/appointments/{id}` | 预约详情（所属 USER） |
+| POST | `/api/v1/user/medical/appointments/{id}/cancel` | 取消待确认预约（所属 USER；释放名额） |
+| GET/POST/PUT/DELETE | `/api/v1/admin/medical/locations` | 医疗点 CRUD（ADMIN；删除前检查医生关联） |
+| GET/POST/PUT/DELETE | `/api/v1/admin/medical/doctors` | 医生 CRUD（ADMIN；删除前检查排班关联） |
+| GET/POST/PUT/DELETE | `/api/v1/admin/medical/services` | 医疗项目 CRUD（ADMIN；删除前检查预约引用） |
+| GET/POST/PUT/DELETE | `/api/v1/admin/medical/schedules` | 排班 CRUD（ADMIN；同医生同天时段重叠校验；有未完成预约只能停用） |
+| GET | `/api/v1/admin/medical/appointments` | 预约列表（ADMIN，支持 status/doctor_id/location_id/keyword 筛选） |
+| POST | `/api/v1/admin/medical/appointments/{id}/confirm` | 确认预约（ADMIN） |
+| POST | `/api/v1/admin/medical/appointments/{id}/reject` | 拒绝预约（ADMIN；必须填原因；释放名额） |
+| POST | `/api/v1/admin/medical/appointments/{id}/complete` | 完成预约（ADMIN；仅已确认可完成） |
 
 ## 认证
 
