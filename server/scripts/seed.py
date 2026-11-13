@@ -17,6 +17,7 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.security import hash_password
 from app.models.care import CareServiceCategory, CareServicePackage
+from app.models.mall import Product, ProductCategory
 from app.models.medical import (
     DoctorSchedule,
     MedicalDoctor,
@@ -298,6 +299,58 @@ def seed_care(db: Session) -> None:
         print("服务套餐已存在，跳过。")
 
 
+# 商城分类与商品（演示数据）
+# (名称, 说明, 排序)
+_MALL_CATEGORIES = [
+    ("猫粮", "猫咪主粮、罐头与零食", 1),
+    ("狗粮", "犬用主粮、罐头与零食", 2),
+    ("日用品", "猫砂、尿垫、食盆等日常用品", 3),
+    ("玩具", "逗猫棒、磨牙玩具等互动玩具", 4),
+]
+
+# (所属分类名称, 商品名, 副标题, 描述, 价格, 库存)
+_MALL_PRODUCTS = [
+    ("猫粮", "全价成猫粮 2kg", "高蛋白无谷配方", "鸡肉味全价猫粮，营养均衡", "88.00", 500),
+    ("猫粮", "猫罐头 85g×12罐", "湿粮补水", "吞拿鱼口味主食罐，开罐即食", "60.00", 300),
+    ("狗粮", "全价犬粮 5kg", "成犬营养", "牛肉味全价犬粮，含益生菌", "120.00", 200),
+    ("日用品", "豆腐猫砂 6L", "结团除臭", "可冲厕所豆腐猫砂，低尘除臭", "35.00", 400),
+    ("日用品", "宠物尿垫 100片", "加厚吸水", "XL 加厚吸水尿垫，锁水防漏", "55.00", 250),
+    ("玩具", "逗猫棒套装", "互动逗猫", "羽毛替换头逗猫棒，猫咪最爱", "25.00", 150),
+]
+
+
+def seed_mall(db: Session) -> None:
+    """幂等创建商城分类与商品。"""
+    categories: dict[str, ProductCategory] = {}
+    for name, desc, sort in _MALL_CATEGORIES:
+        existing = db.scalar(select(ProductCategory).where(ProductCategory.name == name))
+        if existing:
+            categories[name] = existing
+            continue
+        cat = ProductCategory(name=name, description=desc, sort=sort, status="ACTIVE")
+        db.add(cat)
+        db.flush()
+        categories[name] = cat
+        print(f"商品分类 '{name}' 创建成功。")
+
+    created = 0
+    for cat_name, name, subtitle, desc, price, stock in _MALL_PRODUCTS:
+        existing = db.scalar(select(Product).where(Product.name == name))
+        if existing:
+            continue
+        p = Product(
+            category_id=categories[cat_name].id,
+            name=name, subtitle=subtitle, description=desc,
+            price=price, stock=stock, sales=0, status="ACTIVE",
+        )
+        db.add(p)
+        created += 1
+    if created:
+        print(f"商品创建 {created} 条（幂等，已存在的跳过）。")
+    else:
+        print("商品已存在，跳过。")
+
+
 def main() -> None:
     if settings.is_production:
         print("拒绝执行：生产环境不允许自动初始化演示数据。")
@@ -310,6 +363,7 @@ def main() -> None:
         seed_pets(db, categories)
         seed_medical(db)
         seed_care(db)
+        seed_mall(db)
         db.commit()
         print("初始化数据完成。")
     except Exception:

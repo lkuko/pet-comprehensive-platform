@@ -9,6 +9,12 @@ from app.models.care import (  # noqa: F401
     CareServiceCategory,
     CareServicePackage,
 )
+from app.models.mall import (  # noqa: F401
+    Order,
+    OrderItem,
+    Product,
+    ProductCategory,
+)
 from app.models.medical import (  # noqa: F401
     DoctorSchedule,
     MedicalAppointment,
@@ -42,4 +48,8 @@ __all__ = [
     "CareServiceCategory",
     "CareServicePackage",
     "CareAppointment",
+    "ProductCategory",
+    "Product",
+    "Order",
+    "OrderItem",
 ]

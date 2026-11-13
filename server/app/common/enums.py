@@ -102,3 +102,17 @@ class CareAppointmentStatus(StrEnum):
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
     COMPLETED = "COMPLETED"
+
+
+class OrderStatus(StrEnum):
+    """商城订单状态机。
+
+    PENDING_PAYMENT → PAID / CANCELLED；PAID → SHIPPED → COMPLETED。
+    取消仅允许在待支付状态，取消时回滚库存与销量。
+    """
+
+    PENDING_PAYMENT = "PENDING_PAYMENT"
+    PAID = "PAID"
+    SHIPPED = "SHIPPED"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"

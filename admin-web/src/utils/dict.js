@@ -81,3 +81,19 @@ export const CARE_APP_STATUS_TAG = {
   CANCELLED: 'info',
   COMPLETED: 'info'
 }
+
+export const ORDER_STATUS = {
+  PENDING_PAYMENT: '待支付',
+  PAID: '待发货',
+  SHIPPED: '已发货',
+  COMPLETED: '已完成',
+  CANCELLED: '已取消'
+}
+
+export const ORDER_STATUS_TAG = {
+  PENDING_PAYMENT: 'warning',
+  PAID: 'primary',
+  SHIPPED: 'success',
+  COMPLETED: 'info',
+  CANCELLED: 'info'
+}
