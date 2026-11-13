@@ -35,7 +35,7 @@ class Settings(BaseSettings):
 
     # --- MySQL ---
     mysql_host: str = "127.0.0.1"
-    mysql_port: int = 3306
+    mysql_port: int = 3307
     mysql_database: str = "pet_platform"
     mysql_user: str = "pet_user"
     mysql_password: str = "change_me"
