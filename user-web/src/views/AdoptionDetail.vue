@@ -178,7 +178,7 @@ onMounted(load)
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 1000px;
@@ -194,8 +194,8 @@ onMounted(load)
   gap: 24px;
   background: #fff;
   padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 .gallery {
   display: flex;
@@ -206,14 +206,14 @@ onMounted(load)
   width: 100%;
   height: 360px;
   border-radius: 8px;
-  background: #eef2f7;
+  background: var(--brand-sage);
 }
 .main-img.placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 80px;
-  color: #c0c4cc;
+  color: var(--el-text-color-placeholder);
 }
 .thumbs {
   display: flex;
@@ -245,16 +245,17 @@ onMounted(load)
 .section {
   background: #fff;
   padding: 20px 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-top: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 .section h3 {
   margin: 0 0 12px;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .section p {
   margin: 0;
-  color: #606266;
+  color: var(--el-text-color-regular);
   line-height: 1.7;
   white-space: pre-wrap;
 }

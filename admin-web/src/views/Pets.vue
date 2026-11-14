@@ -330,7 +330,7 @@ onMounted(() => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 1100px;
@@ -361,14 +361,14 @@ onMounted(() => {
   width: 56px;
   height: 56px;
   border-radius: 6px;
-  background: #eef2f7;
+  background: var(--brand-sage);
 }
 .cover.placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  color: #c0c4cc;
+  color: var(--el-text-color-placeholder);
 }
 .pager {
   display: flex;
@@ -408,12 +408,12 @@ onMounted(() => {
 .img-add {
   width: 80px;
   height: 80px;
-  border: 1px dashed #c0c4cc;
+  border: 1px dashed var(--el-text-color-placeholder);
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   cursor: pointer;
   font-size: 13px;
 }

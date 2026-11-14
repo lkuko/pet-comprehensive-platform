@@ -87,7 +87,7 @@ onMounted(load)
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 860px;
@@ -96,7 +96,7 @@ onMounted(load)
 }
 .page-title {
   margin: 0 0 16px;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .app-list {
   display: flex;
@@ -124,16 +124,16 @@ onMounted(load)
 .pet-name {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .meta {
   font-size: 13px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   margin-top: 4px;
 }
 .comment {
   font-size: 13px;
-  color: #e6a23c;
+  color: var(--el-color-warning);
   margin-top: 8px;
 }
 .actions {

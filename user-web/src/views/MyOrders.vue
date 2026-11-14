@@ -97,7 +97,7 @@ onMounted(load)
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 900px;
@@ -112,7 +112,7 @@ onMounted(load)
 }
 .page-title {
   margin: 0;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .order-list {
   display: flex;
@@ -127,25 +127,25 @@ onMounted(load)
 }
 .order-no {
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
   margin-right: 12px;
 }
 .order-time {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 .items {
   list-style: none;
   margin: 0 0 12px;
   padding: 0;
-  border-top: 1px solid #f0f2f5;
+  border-top: 1px solid var(--brand-line);
 }
 .item {
   display: flex;
   gap: 12px;
   padding: 8px 0;
   font-size: 14px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 .item-name {
   flex: 1;
@@ -157,7 +157,7 @@ onMounted(load)
 .item-sub {
   width: 90px;
   text-align: right;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .order-foot {
   display: flex;
@@ -166,7 +166,7 @@ onMounted(load)
 }
 .addr {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   max-width: 60%;
 }
 .foot-right {
@@ -175,7 +175,7 @@ onMounted(load)
   gap: 10px;
 }
 .total {
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 .total b {
   color: var(--brand-apricot);

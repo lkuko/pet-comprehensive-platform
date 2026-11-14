@@ -228,7 +228,7 @@ onMounted(async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 1100px;
@@ -248,7 +248,7 @@ onMounted(async () => {
 }
 .form-hint {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   line-height: 1.4;
 }
 </style>

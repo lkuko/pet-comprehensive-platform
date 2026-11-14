@@ -214,7 +214,7 @@ onMounted(() => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 1100px;
@@ -255,7 +255,7 @@ onMounted(() => {
   height: 32px;
   border-radius: 6px;
   object-fit: cover;
-  background: #eef2f7;
+  background: var(--brand-sage);
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -252,7 +252,7 @@ onMounted(async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 1200px;
@@ -261,7 +261,7 @@ onMounted(async () => {
 }
 .page-title {
   margin: 0 0 16px;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .toolbar {
   display: flex;
@@ -295,7 +295,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, var(--brand-sage), #f2f6f2);
+  background: linear-gradient(145deg, var(--brand-sage), var(--brand-cream));
   border-radius: 10px;
   margin-bottom: 10px;
   overflow: hidden;
@@ -311,12 +311,12 @@ onMounted(async () => {
 }
 .p-name {
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
   margin-bottom: 4px;
 }
 .p-subtitle {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   min-height: 18px;
   margin-bottom: 8px;
 }
@@ -333,7 +333,7 @@ onMounted(async () => {
 }
 .p-stock {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 .add-btn {
   width: 100%;
@@ -348,17 +348,18 @@ onMounted(async () => {
   width: 320px;
   flex-shrink: 0;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 16px;
   position: sticky;
   top: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 .cart-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
   margin-bottom: 12px;
 }
 .cart-list {
@@ -370,11 +371,11 @@ onMounted(async () => {
 }
 .cart-item {
   padding: 10px 0;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid var(--brand-line);
 }
 .ci-name {
   font-size: 14px;
-  color: #303133;
+  color: var(--brand-ink);
   margin-bottom: 4px;
 }
 .ci-price {
@@ -392,7 +393,7 @@ onMounted(async () => {
 }
 .cf-total {
   text-align: right;
-  color: #606266;
+  color: var(--el-text-color-regular);
   margin-bottom: 10px;
 }
 .cf-amount {

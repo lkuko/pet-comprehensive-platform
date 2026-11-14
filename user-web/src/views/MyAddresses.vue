@@ -154,7 +154,7 @@ onMounted(load)
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 800px;
@@ -169,7 +169,7 @@ onMounted(load)
 }
 .page-title {
   margin: 0;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .addr-list {
   display: flex;
@@ -189,13 +189,13 @@ onMounted(load)
 }
 .name {
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .phone {
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 .addr-detail {
-  color: #606266;
+  color: var(--el-text-color-regular);
   font-size: 14px;
 }
 .addr-ops {

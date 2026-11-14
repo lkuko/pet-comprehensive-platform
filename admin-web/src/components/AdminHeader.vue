@@ -61,8 +61,9 @@ function logout() {
   gap: 20px;
   padding: 0 24px;
   height: 60px;
-  background: #1e352b;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #fff;
+  border-bottom: 1px solid var(--brand-line);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .brand {
   display: flex;
@@ -76,9 +77,9 @@ function logout() {
   height: 36px;
   display: grid;
   place-items: center;
-  border-radius: 11px;
-  background: linear-gradient(145deg, #e88a45, var(--brand-apricot));
-  box-shadow: 0 4px 12px rgba(224, 123, 52, 0.3);
+  border-radius: 10px;
+  background: linear-gradient(145deg, #ff385c, var(--brand-forest-deep));
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.28);
 }
 .brand-mark svg {
   width: 24px;
@@ -93,13 +94,13 @@ function logout() {
 .brand-name {
   font-family: var(--font-display);
   font-size: 19px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 1px;
+  font-weight: 800;
+  color: var(--brand-ink);
+  letter-spacing: -0.3px;
 }
 .brand-tag {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--el-text-color-secondary);
   letter-spacing: 2px;
 }
 .nav {
@@ -109,21 +110,32 @@ function logout() {
   justify-content: center;
 }
 .nav-link {
+  position: relative;
   padding: 6px 12px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--el-text-color-regular);
   text-decoration: none;
   border-radius: 9px;
   font-size: 13px;
   transition: color 0.15s, background 0.15s;
 }
 .nav-link:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--brand-ink);
+  background: var(--brand-sage);
 }
 .nav-link.router-link-active {
-  color: #fff;
+  color: var(--brand-ink);
+  background: transparent;
+  font-weight: 700;
+}
+.nav-link.router-link-active::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
   background: var(--brand-forest);
-  font-weight: 600;
 }
 .right {
   display: flex;
@@ -137,21 +149,21 @@ function logout() {
   gap: 8px;
   padding: 4px 12px 4px 4px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--brand-line);
 }
 .avatar {
   width: 26px;
   height: 26px;
   border-radius: 50%;
   background: var(--brand-apricot-soft);
-  color: var(--brand-apricot);
+  color: var(--brand-forest);
   display: grid;
   place-items: center;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
 }
 .nickname {
-  color: #fff;
+  color: var(--brand-ink);
   font-size: 13px;
   max-width: 110px;
   overflow: hidden;
@@ -159,10 +171,10 @@ function logout() {
   white-space: nowrap;
 }
 .right :deep(.el-button) {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--el-text-color-regular);
 }
 .right :deep(.el-button:hover) {
-  color: #fff;
+  color: var(--brand-ink);
 }
 
 @media (max-width: 1080px) {

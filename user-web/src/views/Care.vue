@@ -243,7 +243,7 @@ onMounted(async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 900px;
@@ -252,7 +252,7 @@ onMounted(async () => {
 }
 .page-title {
   margin: 0 0 16px;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .tip {
   margin-bottom: 16px;
@@ -263,7 +263,7 @@ onMounted(async () => {
 .block-title {
   margin: 0 0 12px;
   font-size: 15px;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .cat-list,
 .pkg-list {
@@ -274,7 +274,7 @@ onMounted(async () => {
 .cat-card,
 .pkg-card {
   cursor: pointer;
-  border: 1px solid #e4e7ed;
+  border: 1px solid var(--brand-line);
 }
 .cat-card.active,
 .pkg-card.active {
@@ -284,13 +284,13 @@ onMounted(async () => {
 .cat-name,
 .pkg-name {
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
   margin-bottom: 6px;
 }
 .cat-desc,
 .pkg-desc {
   font-size: 13px;
-  color: #606266;
+  color: var(--el-text-color-regular);
   margin-bottom: 6px;
 }
 .pkg-price {
@@ -301,12 +301,12 @@ onMounted(async () => {
 }
 .pkg-unit {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   font-weight: 400;
 }
 .pkg-duration {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 .appoint-form {
   max-width: 560px;

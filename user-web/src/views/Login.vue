@@ -107,7 +107,7 @@ async function onSubmit() {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: linear-gradient(180deg, rgba(30, 53, 43, 0.05) 0%, rgba(30, 53, 43, 0.78) 100%);
+  background: linear-gradient(180deg, rgba(34, 34, 34, 0.04) 0%, rgba(34, 34, 34, 0.72) 100%);
   color: #fff;
 }
 .side-brand {

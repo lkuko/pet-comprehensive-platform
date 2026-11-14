@@ -170,10 +170,10 @@ onMounted(() => {
 }
 .hero-title {
   font-family: var(--font-display);
-  font-size: 44px;
-  line-height: 1.25;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 46px;
+  line-height: 1.18;
+  font-weight: 800;
+  letter-spacing: -0.5px;
   margin: 0 0 16px;
 }
 .hero-sub {
@@ -276,16 +276,16 @@ onMounted(() => {
 }
 .pet-card {
   background: #fff;
-  border: 1px solid var(--brand-line);
-  border-radius: 16px;
+  border: none;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 20px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .pet-card:hover {
   transform: translateY(-4px);
-  border-color: var(--brand-sage-strong);
-  box-shadow: 0 14px 30px rgba(35, 48, 42, 0.12);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.14);
 }
 .cover {
   position: relative;

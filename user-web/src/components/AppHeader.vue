@@ -82,8 +82,8 @@ function logout() {
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: linear-gradient(145deg, #34795a, var(--brand-forest-deep));
-  box-shadow: 0 4px 12px rgba(47, 107, 79, 0.28);
+  background: linear-gradient(145deg, #ff385c, var(--brand-forest-deep));
+  box-shadow: 0 4px 12px rgba(255, 56, 92, 0.28);
 }
 .brand-mark svg {
   width: 26px;
@@ -123,13 +123,23 @@ function logout() {
   transition: color 0.15s, background 0.15s;
 }
 .nav-link:hover {
-  color: var(--brand-forest);
+  color: var(--brand-ink);
   background: var(--brand-sage);
 }
 .nav-link.router-link-active {
-  color: var(--brand-forest);
-  background: var(--brand-sage);
-  font-weight: 600;
+  color: var(--brand-ink);
+  background: transparent;
+  font-weight: 700;
+}
+.nav-link.router-link-active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand-forest);
 }
 .right {
   display: flex;

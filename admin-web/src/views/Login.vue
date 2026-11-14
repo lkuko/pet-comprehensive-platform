@@ -103,7 +103,7 @@ async function onSubmit() {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: linear-gradient(180deg, rgba(30, 53, 43, 0.05) 0%, rgba(30, 53, 43, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(34, 34, 34, 0.04) 0%, rgba(34, 34, 34, 0.72) 100%);
   color: #fff;
 }
 .side-brand {
@@ -120,7 +120,7 @@ async function onSubmit() {
   display: grid;
   place-items: center;
   border-radius: 10px;
-  background: linear-gradient(145deg, #e88a45, var(--brand-apricot));
+  background: linear-gradient(145deg, #ff385c, var(--brand-forest-deep));
 }
 .side-mark svg {
   width: 22px;

@@ -199,7 +199,7 @@ onMounted(load)
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 900px;
@@ -234,7 +234,7 @@ onMounted(load)
   width: 64px;
   height: 64px;
   border-radius: 8px;
-  background: #eef2f7;
+  background: var(--brand-sage);
   flex-shrink: 0;
 }
 .avatar.placeholder {
@@ -242,7 +242,7 @@ onMounted(load)
   align-items: center;
   justify-content: center;
   font-size: 28px;
-  color: #c0c4cc;
+  color: var(--el-text-color-placeholder);
 }
 .name-row {
   display: flex;
@@ -256,11 +256,11 @@ onMounted(load)
 }
 .meta {
   font-size: 13px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 .note {
   font-size: 13px;
-  color: #606266;
+  color: var(--el-text-color-regular);
   margin-top: 4px;
 }
 .ops {

@@ -79,11 +79,11 @@ let ws = null
 let reconnectTimer = null
 
 const statCards = computed(() => [
-  { key: 'users', label: '注册用户', value: summary.value.user_count ?? 0, to: '/', icon: iconUser(), bg: '#e7efe9', color: '#2f6b4f' },
-  { key: 'adoption', label: '待审核领养', value: summary.value.pending_adoption ?? 0, to: '/applications', icon: iconPaw(), bg: '#fbead9', color: '#e07b34' },
-  { key: 'medical', label: '待处理医疗预约', value: summary.value.pending_medical ?? 0, to: '/medical/appointments', icon: iconMed(), bg: '#e3eef5', color: '#3a6ea5' },
-  { key: 'care', label: '待处理洗护预约', value: summary.value.pending_care ?? 0, to: '/care/appointments', icon: iconBath(), bg: '#e9f0f3', color: '#2f8f8f' },
-  { key: 'ship', label: '待发货订单', value: summary.value.pending_ship ?? 0, to: '/mall/orders', icon: iconBox(), bg: '#f4ecf7', color: '#7a5aa0' }
+  { key: 'users', label: '注册用户', value: summary.value.user_count ?? 0, to: '/', icon: iconUser(), bg: '#ffebf0', color: '#ff385c' },
+  { key: 'adoption', label: '待审核领养', value: summary.value.pending_adoption ?? 0, to: '/applications', icon: iconPaw(), bg: '#fff4e6', color: '#ff9f1c' },
+  { key: 'medical', label: '待处理医疗预约', value: summary.value.pending_medical ?? 0, to: '/medical/appointments', icon: iconMed(), bg: '#e6f7f5', color: '#00a699' },
+  { key: 'care', label: '待处理洗护预约', value: summary.value.pending_care ?? 0, to: '/care/appointments', icon: iconBath(), bg: '#eef4ff', color: '#3a7afe' },
+  { key: 'ship', label: '待发货订单', value: summary.value.pending_ship ?? 0, to: '/mall/orders', icon: iconBox(), bg: '#f3eefc', color: '#7a5aa0' }
 ])
 
 function iconUser() {

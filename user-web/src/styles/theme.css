@@ -1,51 +1,51 @@
-@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource-variable/nunito-sans/index.css');
 
-/* ============ 品牌 Token ============ */
+/* ============ 品牌 Token（Airbnb 生活电商风） ============ */
 :root {
-  /* 色彩：森林绿（结构）+ 暖杏橙（记忆点）+ 暖纸（氛围） */
-  --brand-ink: #23302a;
-  --brand-forest: #2f6b4f;
-  --brand-forest-deep: #24523d;
-  --brand-sage: #e7efe9;
-  --brand-sage-strong: #bfd4c6;
-  --brand-apricot: #e07b34;
-  --brand-apricot-soft: #fbead9;
-  --brand-cream: #fbf6ec;
-  --brand-paper: #f6f7f4;
-  --brand-line: #e6ebe4;
+  /* 色彩：珊瑚红 Rausch（品牌）+ 墨黑（主文字/主 CTA）+ 纯白（大量留白） */
+  --brand-ink: #222222;
+  --brand-forest: #ff385c;       /* 品牌主色（沿用具名变量，值为 Airbnb Rausch） */
+  --brand-forest-deep: #d70466;  /* 品牌主色 hover/active */
+  --brand-sage: #f7f7f7;         /* 浅灰底 */
+  --brand-sage-strong: #ebebeb;  /* 浅灰强调/边框 */
+  --brand-apricot: #ff385c;      /* 强调色（沿用具名变量，归一为主色） */
+  --brand-apricot-soft: #fff0f3; /* 浅玫红底 */
+  --brand-cream: #f7f7f7;
+  --brand-paper: #ffffff;        /* 页面底：Airbnb 纯白 */
+  --brand-line: #ebebeb;
 
-  /* 字体 */
-  --font-display: 'LXGW WenKai', 'STKaiti', 'KaiTi', 'SimSun', serif;
-  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  /* 字体：Nunito Sans（近 Airbnb Cereal 的几何无衬线）+ 中文无衬线 */
+  --font-display: 'Nunito Sans Variable', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Nunito Sans Variable', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
 
   /* ============ Element Plus 变量覆盖 ============ */
-  --el-color-primary: #2f6b4f;
-  --el-color-primary-light-3: #6d9784;
-  --el-color-primary-light-5: #97b5a7;
-  --el-color-primary-light-7: #c1d3ca;
-  --el-color-primary-light-8: #d5e1dc;
-  --el-color-primary-light-9: #eaf0ee;
-  --el-color-primary-dark-2: #24523d;
+  --el-color-primary: #ff385c;
+  --el-color-primary-light-3: #ff5e7a;
+  --el-color-primary-light-5: #ff8398;
+  --el-color-primary-light-7: #ffa9b8;
+  --el-color-primary-light-8: #ffbcc8;
+  --el-color-primary-light-9: #ffe2e7;
+  --el-color-primary-dark-2: #d70466;
 
-  --el-color-success: #2f6b4f;
-  --el-color-warning: #e07b34;
-  --el-color-danger: #c9483b;
-  --el-color-error: #c9483b;
-  --el-color-info: #7a867f;
+  --el-color-success: #00a699;
+  --el-color-warning: #ffb400;
+  --el-color-danger: #e31c5f;
+  --el-color-error: #e31c5f;
+  --el-color-info: #717171;
 
-  --el-text-color-primary: #23302a;
-  --el-text-color-regular: #45524c;
-  --el-text-color-secondary: #7a867f;
-  --el-text-color-placeholder: #a8b1ac;
-  --el-text-color-disabled: #c4cbc6;
+  --el-text-color-primary: #222222;
+  --el-text-color-regular: #484848;
+  --el-text-color-secondary: #717171;
+  --el-text-color-placeholder: #b0b0b0;
+  --el-text-color-disabled: #dddddd;
 
-  --el-border-color: #d9e0da;
-  --el-border-color-light: #e6ebe4;
-  --el-border-color-lighter: #eff3f0;
-  --el-border-color-extra-light: #f4f6f3;
+  --el-border-color: #dddddd;
+  --el-border-color-light: #ebebeb;
+  --el-border-color-lighter: #f0f0f0;
+  --el-border-color-extra-light: #f7f7f7;
 
-  --el-fill-color-light: #f4f6f3;
-  --el-fill-color-lighter: #f8faf8;
+  --el-fill-color-light: #f7f7f7;
+  --el-fill-color-lighter: #fafafa;
   --el-fill-color-blank: #ffffff;
 
   --el-border-radius-base: 10px;
@@ -53,8 +53,8 @@
   --el-border-radius-round: 999px;
 
   --el-font-family: var(--font-body);
-  --el-box-shadow-light: 0 2px 12px rgba(35, 48, 42, 0.06);
-  --el-box-shadow: 0 6px 20px rgba(35, 48, 42, 0.08);
+  --el-box-shadow-light: 0 6px 16px rgba(0, 0, 0, 0.08);
+  --el-box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
 }
 
 /* ============ 基础排版 ============ */
@@ -83,20 +83,20 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--brand-ink);
-  letter-spacing: 0.5px;
+  letter-spacing: -0.2px;
   margin: 0;
 }
 
 a {
-  color: var(--brand-forest);
+  color: var(--brand-ink);
   text-decoration: none;
 }
 
 /* ============ Element Plus 细节微调 ============ */
 .el-button {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .el-button--primary {
@@ -106,8 +106,9 @@ a {
 }
 
 .el-card {
-  --el-card-border-radius: 14px;
-  border: 1px solid var(--brand-line);
+  --el-card-border-radius: 12px;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .el-tag {
@@ -125,15 +126,18 @@ a {
   background-color: var(--brand-forest);
 }
 
-/* 通用强调 CTA（暖杏橙 —— 仅用于 hero 等关键按钮） */
+/* 主 CTA（Airbnb 墨黑胶囊按钮，仅用于 hero 等关键入口） */
 .btn-accent {
-  background: linear-gradient(135deg, #df7a2e, #c8651f) !important;
+  background: #222222 !important;
   border: none !important;
   color: #fff !important;
   font-weight: 600;
-  box-shadow: 0 8px 20px rgba(200, 101, 31, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .btn-accent:hover {
-  filter: brightness(0.96);
+  background: #000000 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
 }

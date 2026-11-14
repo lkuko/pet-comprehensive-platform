@@ -194,7 +194,7 @@ onMounted(async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--brand-paper);
 }
 .container {
   max-width: 900px;
@@ -203,7 +203,7 @@ onMounted(async () => {
 }
 .page-title {
   margin: 0 0 16px;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .tip {
   margin-bottom: 16px;
@@ -214,7 +214,7 @@ onMounted(async () => {
 .block-title {
   margin: 0 0 12px;
   font-size: 15px;
-  color: #303133;
+  color: var(--brand-ink);
 }
 .location-list,
 .doctor-list {
@@ -225,7 +225,7 @@ onMounted(async () => {
 .loc-card,
 .doctor-card {
   cursor: pointer;
-  border: 1px solid #e4e7ed;
+  border: 1px solid var(--brand-line);
 }
 .loc-card.active,
 .doctor-card.active {
@@ -235,19 +235,19 @@ onMounted(async () => {
 .loc-name,
 .doctor-name {
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
   margin-bottom: 6px;
 }
 .loc-addr,
 .doctor-title {
   font-size: 13px;
-  color: #606266;
+  color: var(--el-text-color-regular);
   margin-bottom: 4px;
 }
 .loc-phone,
 .doctor-specialty {
   font-size: 12px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 .schedule-groups {
   display: flex;
@@ -255,14 +255,14 @@ onMounted(async () => {
   gap: 12px;
 }
 .schedule-group {
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--brand-line);
   border-radius: 6px;
   padding: 12px;
   background: #fff;
 }
 .schedule-date {
   font-weight: 600;
-  color: #303133;
+  color: var(--brand-ink);
   margin-bottom: 8px;
 }
 .slot-list {
