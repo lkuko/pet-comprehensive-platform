@@ -18,6 +18,7 @@ from app.core.database import engine
 from app.core.exceptions import BizError
 from app.core.logging import request_id_var, setup_logging
 from app.core.redis import get_redis
+from app.websocket.admin_notifications import router as ws_router
 
 logger = logging.getLogger("app.main")
 
@@ -123,6 +124,9 @@ def health_ready():
 
 
 app.include_router(api_router, prefix=settings.api_prefix)
+
+# WebSocket 管理端提醒（独立于 /api/v1 前缀）
+app.include_router(ws_router)
 
 # 挂载上传目录为静态资源，供图片 URL 直接访问
 settings.upload_path.mkdir(parents=True, exist_ok=True)

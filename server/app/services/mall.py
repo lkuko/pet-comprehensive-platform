@@ -7,7 +7,12 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.common.enums import EnableStatus, InventoryChangeType, OrderStatus
+from app.common.enums import (
+    EnableStatus,
+    InventoryChangeType,
+    NotificationBusinessType,
+    OrderStatus,
+)
 from app.common.pagination import PageResult, normalize_page
 from app.core.config import settings
 from app.core.exceptions import ConflictError, NotFoundError, ParamError
@@ -22,6 +27,7 @@ from app.models.mall import (
 )
 from app.models.user import User
 from app.repositories.mall import MallRepository
+from app.services import notification as notification_service
 from app.schemas.mall import (
     AddressCreate,
     AddressOut,
@@ -326,6 +332,14 @@ def checkout(db: Session, user_id: int, data: CheckoutCreate) -> OrderOut:
     order.total_amount = total
     db.add(order)
     try:
+        db.flush()
+        notification_service.create_notification(
+            db,
+            NotificationBusinessType.PRODUCT_ORDER.value,
+            order.id,
+            "收到新的商品订单",
+            f"订单 {order.order_no}",
+        )
         db.commit()
     except IntegrityError:
         # 并发重复下单：唯一约束 (user_id, idempotency_key) 兜底，返回已存在订单
@@ -342,6 +356,9 @@ def checkout(db: Session, user_id: int, data: CheckoutCreate) -> OrderOut:
         raise
     clear_cart(user_id)
     db.refresh(order)
+    notification_service.push_new_business(
+        NotificationBusinessType.PRODUCT_ORDER.value, order.id, "收到新的商品订单"
+    )
     return _order_out(order)
 
 

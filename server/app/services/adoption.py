@@ -2,7 +2,11 @@
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
-from app.common.enums import AdoptionApplicationStatus, AdoptionPetStatus
+from app.common.enums import (
+    AdoptionApplicationStatus,
+    AdoptionPetStatus,
+    NotificationBusinessType,
+)
 from app.common.pagination import PageResult, normalize_page
 from app.core.exceptions import ConflictError, NotFoundError, ParamError
 from app.models.pet import AdoptionApplication, AdoptionPet, AdoptionPetImage, PetCategory
@@ -17,6 +21,7 @@ from app.schemas.adoption import (
     AdoptionPetUpdate,
     PetCategoryOut,
 )
+from app.services import notification as notification_service
 from app.utils.order_no import gen_no
 from app.utils.time import to_iso, utcnow
 
@@ -238,8 +243,19 @@ def create_application(db: Session, user_id: int, data: AdoptionApplicationCreat
         status=AdoptionApplicationStatus.PENDING.value,
     )
     db.add(app)
+    db.flush()
+    notification_service.create_notification(
+        db,
+        NotificationBusinessType.ADOPTION_APPLICATION.value,
+        app.id,
+        "收到新的领养申请",
+        f"用户申请领养「{pet.name}」",
+    )
     db.commit()
     db.refresh(app)
+    notification_service.push_new_business(
+        NotificationBusinessType.ADOPTION_APPLICATION.value, app.id, "收到新的领养申请"
+    )
     return _to_application_out(app)
 
 

@@ -10,8 +10,10 @@ from app.api.admin.v1 import adoption as admin_adoption
 from app.api.admin.v1 import adoption_applications as admin_adoption_applications
 from app.api.admin.v1 import auth as admin_auth
 from app.api.admin.v1 import care as admin_care
+from app.api.admin.v1 import dashboard as admin_dashboard
 from app.api.admin.v1 import mall as admin_mall
 from app.api.admin.v1 import medical as admin_medical
+from app.api.admin.v1 import notifications as admin_notifications
 from app.api.public.v1 import adoption as public_adoption
 from app.api.public.v1 import care as public_care
 from app.api.public.v1 import mall as public_mall
@@ -50,6 +52,8 @@ admin_router.include_router(admin_adoption_applications.router)
 admin_router.include_router(admin_medical.router)
 admin_router.include_router(admin_care.router)
 admin_router.include_router(admin_mall.router)
+admin_router.include_router(admin_dashboard.router)
+admin_router.include_router(admin_notifications.router)
 api_router.include_router(admin_router)
 
 # 公开端（游客可访问）

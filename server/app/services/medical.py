@@ -4,7 +4,12 @@ from datetime import date, time
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from app.common.enums import EnableStatus, MedicalAppointmentStatus, UserPetStatus
+from app.common.enums import (
+    EnableStatus,
+    MedicalAppointmentStatus,
+    NotificationBusinessType,
+    UserPetStatus,
+)
 from app.common.pagination import PageResult, normalize_page
 from app.core.exceptions import ConflictError, NotFoundError, ParamError
 from app.models.medical import (
@@ -33,6 +38,7 @@ from app.schemas.medical import (
     MedicalServiceOut,
     MedicalServiceUpdate,
 )
+from app.services import notification as notification_service
 from app.utils.order_no import gen_no
 from app.utils.time import combine_business_time, to_iso, utcnow
 
@@ -198,8 +204,19 @@ def create_appointment(
         status=MedicalAppointmentStatus.PENDING_CONFIRMATION.value,
     )
     db.add(app)
+    db.flush()
+    notification_service.create_notification(
+        db,
+        NotificationBusinessType.MEDICAL_APPOINTMENT.value,
+        app.id,
+        "收到新的医疗预约",
+        f"{pet.name} 预约「{service.name}」",
+    )
     db.commit()
     db.refresh(app)
+    notification_service.push_new_business(
+        NotificationBusinessType.MEDICAL_APPOINTMENT.value, app.id, "收到新的医疗预约"
+    )
     return _to_appointment_out(app)
 
 

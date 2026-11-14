@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.common.enums import (
     CareAppointmentStatus,
     EnableStatus,
+    NotificationBusinessType,
     ServiceType,
     UserPetStatus,
 )
@@ -26,6 +27,7 @@ from app.schemas.care import (
     CarePackageOut,
     CarePackageUpdate,
 )
+from app.services import notification as notification_service
 from app.utils.order_no import gen_no
 from app.utils.time import business_tz, to_iso, to_utc_naive, utcnow
 
@@ -155,8 +157,19 @@ def create_appointment(
         status=CareAppointmentStatus.PENDING_CONFIRMATION.value,
     )
     db.add(app)
+    db.flush()
+    notification_service.create_notification(
+        db,
+        NotificationBusinessType.SERVICE_BOOKING.value,
+        app.id,
+        "收到新的洗护/寄养预约",
+        f"{pet.name} 预约「{package.name}」",
+    )
     db.commit()
     db.refresh(app)
+    notification_service.push_new_business(
+        NotificationBusinessType.SERVICE_BOOKING.value, app.id, "收到新的洗护/寄养预约"
+    )
     return _to_out(app)
 
 

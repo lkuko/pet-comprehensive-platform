@@ -125,3 +125,12 @@ class InventoryChangeType(StrEnum):
     ORDER_DEDUCT = "ORDER_DEDUCT"  # 下单预扣
     ORDER_RELEASE = "ORDER_RELEASE"  # 取消/超时关单返还
     ADMIN_ADJUST = "ADMIN_ADJUST"  # 管理员调库存
+
+
+class NotificationBusinessType(StrEnum):
+    """管理端业务提醒类型（WebSocket 推送与通知记录共用）。"""
+
+    ADOPTION_APPLICATION = "ADOPTION_APPLICATION"  # 新领养申请
+    MEDICAL_APPOINTMENT = "MEDICAL_APPOINTMENT"  # 新医疗预约
+    SERVICE_BOOKING = "SERVICE_BOOKING"  # 新洗护/寄养预约
+    PRODUCT_ORDER = "PRODUCT_ORDER"  # 新商品订单

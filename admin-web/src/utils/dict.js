@@ -99,3 +99,17 @@ export const ORDER_STATUS_TAG = {
   CANCELLED: 'info',
   CLOSED: 'info'
 }
+
+export const BUSINESS_TYPE = {
+  ADOPTION_APPLICATION: '领养申请',
+  MEDICAL_APPOINTMENT: '医疗预约',
+  SERVICE_BOOKING: '洗护/寄养预约',
+  PRODUCT_ORDER: '商品订单'
+}
+
+export const BUSINESS_TYPE_TAG = {
+  ADOPTION_APPLICATION: 'warning',
+  MEDICAL_APPOINTMENT: 'success',
+  SERVICE_BOOKING: 'primary',
+  PRODUCT_ORDER: 'info'
+}

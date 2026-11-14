@@ -24,6 +24,7 @@ from app.models.medical import (  # noqa: F401
     MedicalLocation,
     MedicalService,
 )
+from app.models.notification import AdminNotification  # noqa: F401
 from app.models.pet import (  # noqa: F401
     AdoptionApplication,
     AdoptionPet,
@@ -56,4 +57,5 @@ __all__ = [
     "OrderItem",
     "UserAddress",
     "InventoryLog",
+    "AdminNotification",
 ]
