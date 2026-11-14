@@ -216,7 +216,7 @@ onMounted(() => {
   position: absolute;
   left: -18px;
   bottom: 22px;
-  background: #fff;
+  background: var(--el-bg-color);
   border-radius: 14px;
   padding: 12px 18px;
   box-shadow: 0 10px 24px rgba(35, 48, 42, 0.14);
@@ -275,7 +275,7 @@ onMounted(() => {
   min-height: 200px;
 }
 .pet-card {
-  background: #fff;
+  background: var(--el-bg-color);
   border: none;
   border-radius: 12px;
   overflow: hidden;

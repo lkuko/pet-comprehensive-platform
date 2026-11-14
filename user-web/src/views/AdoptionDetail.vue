@@ -192,7 +192,7 @@ onMounted(load)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  background: #fff;
+  background: var(--el-bg-color);
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06);
@@ -243,7 +243,7 @@ onMounted(load)
   margin-top: 16px;
 }
 .section {
-  background: #fff;
+  background: var(--el-bg-color);
   padding: 20px 24px;
   border-radius: 12px;
   margin-top: 16px;

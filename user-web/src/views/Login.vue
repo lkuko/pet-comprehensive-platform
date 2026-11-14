@@ -84,7 +84,7 @@ async function onSubmit() {
   min-height: 520px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: #fff;
+  background: var(--el-bg-color);
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid var(--brand-line);

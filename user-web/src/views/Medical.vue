@@ -258,7 +258,7 @@ onMounted(async () => {
   border: 1px solid var(--brand-line);
   border-radius: 6px;
   padding: 12px;
-  background: #fff;
+  background: var(--el-bg-color);
 }
 .schedule-date {
   font-weight: 600;
@@ -276,7 +276,7 @@ onMounted(async () => {
 }
 .appoint-form {
   max-width: 520px;
-  background: #fff;
+  background: var(--el-bg-color);
   padding: 24px;
   border-radius: 8px;
 }

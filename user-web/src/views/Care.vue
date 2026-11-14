@@ -310,7 +310,7 @@ onMounted(async () => {
 }
 .appoint-form {
   max-width: 560px;
-  background: #fff;
+  background: var(--el-bg-color);
   padding: 24px;
   border-radius: 8px;
 }

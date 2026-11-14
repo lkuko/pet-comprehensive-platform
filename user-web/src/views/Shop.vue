@@ -347,7 +347,7 @@ onMounted(async () => {
 .cart {
   width: 320px;
   flex-shrink: 0;
-  background: #fff;
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 16px;
   position: sticky;
