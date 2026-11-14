@@ -2,7 +2,7 @@
 
 基于前后端分离架构的宠物综合服务平台，覆盖宠物领养、宠物医疗预约、洗护/寄养服务预约、宠物用品商城四条核心业务线。
 
-> 开发基线以 `docs/计划初稿.md` 为唯一依据。当前进度：Day 1~8（工程骨架 / 认证 / 领养 / 医疗预约 / 洗护寄养 / 商城 / 商城闭环补全）+ Day 9 WebSocket 管理端提醒与工作台统计已全部完成，四条核心业务线均已落地。
+> 开发基线以 `docs/计划初稿.md` 为唯一依据。**Day 1~10 已全部完成**：工程骨架 / 认证 / 领养 / 医疗预约 / 洗护寄养 / 商城 / 商城闭环补全 / WebSocket 提醒与工作台 / Docker+Nginx 部署与全流程验收，四条核心业务线均已落地并可一键部署。
 
 ## 技术栈
 
@@ -20,9 +20,9 @@ pet-comprehensive-platform/
 ├── server/            # FastAPI 后端（分层：api/schemas/services/repositories/models/core）
 ├── admin-web/         # 管理端（Vue 3）
 ├── user-web/          # 用户端（Vue 3）
-├── deploy/            # Nginx 与 Dockerfile（部署阶段补充）
+├── deploy/            # Nginx 配置、前后端 Dockerfile、启动脚本
 ├── docs/              # 计划基线、API、数据库、部署文档
-└── docker-compose.yml # MySQL 8.0 + Redis
+└── docker-compose.yml # MySQL + Redis + 后端 + Nginx（一键部署）
 ```
 
 ## 快速开始
@@ -33,6 +33,21 @@ pet-comprehensive-platform/
 cp .env.example .env          # 按需修改密码
 docker compose up -d mysql redis
 ```
+
+> 本机 phpstudy 已占用 3306，MySQL 映射到宿主 `3307`。
+
+### 1.5 Docker 一键部署（演示 / 生产）
+
+跳过上述本地步骤，直接整栈启动：
+
+```bash
+cp .env.example .env          # 设置 ADMIN_SEED_PASSWORD 与 JWT_SECRET_KEY 等
+docker compose up -d --build
+```
+
+- 用户端：`http://localhost:80`；管理端：`http://localhost:81`（端口见 `.env` 的 `USER_WEB_PORT` / `ADMIN_WEB_PORT`）。
+- 后端容器启动时自动执行 `alembic upgrade head`，非生产环境幂等 seed（含管理员 + 演示数据）。
+- 生产部署要点见 `docs/开发与部署说明.md`（`APP_ENV=production`、HTTPS/WSS、备份、模拟支付边界）。
 
 ### 2. 后端
 
@@ -88,5 +103,6 @@ pytest
 - [x] Day 7 宠物用品商城：商品分类/商品(SPU)/订单/订单明细模型，公开商品列表与详情、购物车（Redis Hash 落地）、下单 `SELECT FOR UPDATE` 锁库存防超卖 + 明细价格快照、订单状态机（待支付→已支付/已取消→已发货→已完成，取消回滚库存销量）、管理端分类/商品 CRUD + 删除保护 + 订单发货/完成、seed 4 分类 + 6 商品
 - [x] Day 8 商城闭环补全：收货地址 CRUD（默认地址事务、省市区+详细地址）、库存流水表 `inventory_logs`（下单扣减 / 取消与关单返还 / 管理员调库存三类流水）、APScheduler 定时超时关单（幂等 + 返还库存）、下单幂等键（`(user_id, idempotency_key)` 唯一约束）、用户确认收货（SHIPPED→COMPLETED）
 - [x] Day 9 WebSocket 提醒与工作台：`admin_notifications` 通知表、WebSocket 端点 `/ws/admin/notifications`（认证首帧校验 ADMIN，5 秒超时）、四类业务（领养申请/医疗预约/洗护寄养预约/商品订单）提交事务内落通知、事务提交后推送、工作台统计（用户数/待审核/待处理/待发货/未读 + 最近动态）、通知 REST API（列表/已读/未读数/全部已读）
+- [x] Day 10 部署与验收：后端 Dockerfile + 启动脚本（自动迁移 + 幂等 seed）、双前端多阶段构建镜像、Nginx 双站点反代（`/api`、`/uploads`、`/ws` WebSocket 升级）、`docker compose up -d --build` 一键部署、演示图片随代码入库并 seed 幂等复制、部署文档与验收清单补全
 
 详细开发计划见 `docs/项目计划与结构.md`。

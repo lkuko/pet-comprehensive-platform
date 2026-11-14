@@ -1,0 +1,28 @@
+# 后端服务镜像：FastAPI + Uvicorn
+# 构建上下文为项目根目录：docker build -f deploy/Dockerfile.server -t pet-server .
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    TZ=Asia/Shanghai
+
+WORKDIR /app
+
+# 先装依赖，利用 Docker 层缓存（PyMySQL/cryptography/bcrypt 均有 manylinux wheel，无需系统编译链）
+COPY server/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制后端源码（含 alembic、scripts/seed、seed_data 演示图片）
+COPY server/ /app/
+
+# 运行时上传目录（生产由 uploads_data 卷覆盖；本地直接使用）
+RUN mkdir -p /app/uploads
+
+# 启动脚本：迁移 → 非生产幂等 seed → 单实例 uvicorn
+COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -6,8 +6,10 @@
 用法（在 server/ 目录下）：
     ADMIN_SEED_PASSWORD=你的密码 python -m scripts.seed
 """
+import shutil
 import sys
 from datetime import date, datetime, time, timedelta
+from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -27,6 +29,10 @@ from app.models.medical import (
 from app.models.pet import AdoptionPet, AdoptionPetImage, PetCategory
 from app.models.user import User
 from app.utils.time import business_tz, utcnow
+
+# 演示图片随代码入库（server/seed_data/images/），运行时 uploads 目录为持久卷/本地目录，
+# 首次 seed 时由 _ensure_demo_images() 幂等复制，保证图片 URL（/uploads/...）可访问。
+_SEED_IMAGES_DIR = Path(__file__).resolve().parents[1] / "seed_data" / "images"
 
 # (名称, 排序)
 _CATEGORIES = [("猫", 1), ("狗", 2), ("其他", 3)]
@@ -66,7 +72,7 @@ _PETS = [
 ]
 
 
-# 演示领养宠物封面图（文件名位于 server/uploads/pets/ 下，seed 前需先放置图片）
+# 演示领养宠物封面图（源文件位于 server/seed_data/images/pets/ 下，seed 时复制到 uploads/pets/）
 _PET_IMAGES = {
     "小白": "pet-01.jpg",
     "花花": "pet-02.jpg",
@@ -79,6 +85,29 @@ _PET_IMAGES = {
     "雪球": "pet-09.jpg",
     "黑子": "pet-10.jpg",
 }
+
+
+def _ensure_demo_images() -> None:
+    """将 seed 演示图片复制到运行时 uploads 目录（幂等：目标已存在则跳过）。
+
+    演示图片随代码入库，运行时 uploads 目录可能是持久卷（Docker）或本地目录，
+    首次执行时复制一次，保证 seed 写入数据库的图片 URL 可访问。
+    """
+    if not _SEED_IMAGES_DIR.is_dir():
+        return
+    for subdir in ("pets", "products"):
+        src_dir = _SEED_IMAGES_DIR / subdir
+        if not src_dir.is_dir():
+            continue
+        dst_dir = settings.upload_path / subdir
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        for src in src_dir.iterdir():
+            if not src.is_file():
+                continue
+            dst = dst_dir / src.name
+            if not dst.exists():
+                shutil.copyfile(src, dst)
+                print(f"复制演示图片：{subdir}/{src.name}")
 
 
 def seed_admin(db: Session) -> None:
@@ -398,6 +427,7 @@ def main() -> None:
 
     db = SessionLocal()
     try:
+        _ensure_demo_images()
         seed_admin(db)
         categories = seed_categories(db)
         seed_pets(db, categories)

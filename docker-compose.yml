@@ -1,5 +1,17 @@
-# 基础设施编排：MySQL 8.0 + Redis
-# Day 1 骨架只编排基础组件；后端 / 前端 / Nginx 服务在部署阶段（Day 10）补充。
+# 智能宠物综合服务平台 —— Docker Compose 编排
+# 生产/演示一键部署：MySQL 8.0 + Redis + FastAPI 后端 + Nginx（双前端）
+#
+# 用法：
+#   cp .env.example .env          # 修改密码、JWT 密钥、APP_ENV、seed 密码
+#   docker compose up -d --build
+#
+# 访问：
+#   用户端  http://localhost:${USER_WEB_PORT:-80}
+#   管理端  http://localhost:${ADMIN_WEB_PORT:-81}
+#   后端探针 http://localhost:8000/health （未对外映射端口时走 web 代理 /api 或直接访问容器）
+
+name: pet-comprehensive-platform
+
 services:
   mysql:
     image: mysql:8.0
@@ -14,25 +26,102 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+    # 仅本地开发/调试需要把 MySQL 映射到宿主；生产建议注释掉该 ports 段，只经后端访问
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
       interval: 5s
       timeout: 5s
       retries: 12
+    networks: [petnet]
 
   redis:
     image: redis:7-alpine
     container_name: pet-redis
     restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    # 同 mysql：仅本地开发/调试需要，生产建议注释掉该 ports 段
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [petnet]
+
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.server
+    container_name: pet-backend
+    restart: unless-stopped
+    environment:
+      APP_NAME: ${APP_NAME:-pet-comprehensive-platform}
+      APP_ENV: ${APP_ENV:-development}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Shanghai}
+      API_PREFIX: ${API_PREFIX:-/api/v1}
+      # 容器内统一使用服务名访问依赖（宿主映射端口 3307/6379 仅本地开发用）
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-pet_platform}
+      MYSQL_USER: ${MYSQL_USER:-pet_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change_me}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: ${REDIS_DB:-0}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-replace_with_long_random_secret}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-120}
+      UPLOAD_DIR: /app/uploads
+      UPLOAD_BASE_URL: ${UPLOAD_BASE_URL:-/uploads}
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-5}
+      ORDER_PAY_TIMEOUT_MINUTES: ${ORDER_PAY_TIMEOUT_MINUTES:-30}
+      ADMIN_SEED_USERNAME: ${ADMIN_SEED_USERNAME:-admin}
+      ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-}
+      USER_WEB_ORIGIN: ${USER_WEB_ORIGIN:-http://localhost:5173}
+      ADMIN_WEB_ORIGIN: ${ADMIN_WEB_ORIGIN:-http://localhost:5174}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks: [petnet]
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.web
+    container_name: pet-web
+    restart: unless-stopped
+    ports:
+      - "${USER_WEB_PORT:-80}:80"
+      - "${ADMIN_WEB_PORT:-81}:81"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [petnet]
 
 volumes:
   mysql_data:
   redis_data:
+  uploads_data:
+
+networks:
+  petnet:
+    driver: bridge

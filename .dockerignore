@@ -1,0 +1,34 @@
+# 版本控制
+.git
+.gitignore
+
+# Python
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/venv
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+**/*.egg-info
+
+# Node
+**/node_modules
+**/dist
+**/.vite
+
+# 环境与密钥（禁止进入镜像）
+.env
+**/.env
+
+# 运行时上传目录（容器内为持久卷，无需打入镜像；演示图片在 seed_data/images 下）
+server/uploads/*
+
+# 日志与临时文件
+*.log
+**/.DS_Store
+Thumbs.db
+
+# 工作区辅助
+.workbuddy
+.agents
