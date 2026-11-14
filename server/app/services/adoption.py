@@ -100,7 +100,12 @@ def list_public_pets(
 
 def get_public_pet(db: Session, pet_id: int) -> AdoptionPetDetail:
     pet = _get_pet(db, pet_id)
-    if pet.status != AdoptionPetStatus.AVAILABLE.value:
+    # 上架中与已领养的宠物均可查看详情（用户申请记录里可回看已领养宠物），
+    # 草稿与已下架不对外展示。
+    if pet.status not in (
+        AdoptionPetStatus.AVAILABLE.value,
+        AdoptionPetStatus.ADOPTED.value,
+    ):
         raise NotFoundError("领养宠物不存在或已下架")
     return _to_detail(pet)
 
@@ -341,6 +346,9 @@ def approve_application(db: Session, admin: User, application_id: int) -> Adopti
     app.reviewer_id = admin.id
     app.reviewed_at = now
     pet.status = AdoptionPetStatus.ADOPTED.value
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.ADOPTION_APPLICATION.value, app.id
+    )
 
     # 同一宠物其他待审核申请统一关闭
     db.execute(
@@ -374,5 +382,8 @@ def reject_application(
     app.review_comment = comment
     app.reviewer_id = admin.id
     app.reviewed_at = utcnow()
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.ADOPTION_APPLICATION.value, app.id
+    )
     db.commit()
     return _to_application_out(app)

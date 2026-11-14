@@ -42,12 +42,19 @@
 
         <el-empty v-if="!summary.recent_business?.length" description="暂无业务动态" :image-size="80" />
         <ul v-else class="timeline">
-          <li v-for="item in summary.recent_business" :key="item.id" class="timeline-item">
+          <li
+            v-for="item in summary.recent_business"
+            :key="item.id"
+            class="timeline-item"
+            :title="`前往处理：${businessText(item.business_type)}`"
+            @click="goBusiness(item)"
+          >
             <el-tag :type="businessTag(item.business_type)" size="small" effect="light">
               {{ businessText(item.business_type) }}
             </el-tag>
             <span class="timeline-title">{{ item.title }}</span>
             <span class="timeline-time">{{ formatTime(item.created_at) }}</span>
+            <span class="timeline-arrow">›</span>
           </li>
         </ul>
       </el-card>
@@ -61,6 +68,7 @@ import { useRouter } from 'vue-router'
 import { ElNotification } from 'element-plus'
 import AdminHeader from '../components/AdminHeader.vue'
 import { getSummary } from '../api/dashboard'
+import { markRead } from '../api/notification'
 import { BUSINESS_TYPE, BUSINESS_TYPE_TAG } from '../utils/dict'
 
 const router = useRouter()
@@ -99,6 +107,25 @@ function businessText(type) {
 }
 function businessTag(type) {
   return BUSINESS_TYPE_TAG[type] || 'info'
+}
+function businessRoute(type) {
+  return {
+    ADOPTION_APPLICATION: '/applications',
+    MEDICAL_APPOINTMENT: '/medical/appointments',
+    SERVICE_BOOKING: '/care/appointments',
+    PRODUCT_ORDER: '/mall/orders'
+  }[type]
+}
+async function goBusiness(item) {
+  const path = businessRoute(item.business_type)
+  if (path) router.push(path)
+  // 顺带将对应通知标记为已读，使工作台红点随处理推进而减少
+  try {
+    await markRead(item.id)
+    load()
+  } catch {
+    /* 标记失败不影响跳转 */
+  }
 }
 function formatTime(iso) {
   if (!iso) return ''
@@ -263,6 +290,11 @@ onUnmounted(() => {
   gap: 12px;
   padding: 12px 4px;
   border-bottom: 1px dashed var(--brand-line);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.timeline-item:hover {
+  background: var(--brand-paper);
 }
 .timeline-item:last-child {
   border-bottom: none;
@@ -275,5 +307,10 @@ onUnmounted(() => {
 .timeline-time {
   color: var(--el-text-color-placeholder);
   font-size: 12px;
+}
+.timeline-arrow {
+  color: var(--el-text-color-placeholder);
+  font-size: 18px;
+  line-height: 1;
 }
 </style>

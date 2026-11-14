@@ -250,6 +250,9 @@ def confirm_appointment(
         raise ConflictError("该预约已被处理，无法重复操作")
     app.status = CareAppointmentStatus.CONFIRMED.value
     app.reviewed_at = utcnow()
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.SERVICE_BOOKING.value, app.id
+    )
     db.commit()
     return _to_out(app)
 
@@ -265,6 +268,9 @@ def reject_appointment(
     app.status = CareAppointmentStatus.REJECTED.value
     app.review_comment = comment
     app.reviewed_at = utcnow()
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.SERVICE_BOOKING.value, app.id
+    )
     db.commit()
     return _to_out(app)
 
@@ -278,6 +284,9 @@ def complete_appointment(
     if app.status != CareAppointmentStatus.CONFIRMED.value:
         raise ConflictError("仅已确认的预约可标记完成")
     app.status = CareAppointmentStatus.COMPLETED.value
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.SERVICE_BOOKING.value, app.id
+    )
     db.commit()
     return _to_out(app)
 

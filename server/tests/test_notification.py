@@ -122,6 +122,23 @@ def test_mark_all_read(db):
     assert notif_service.unread_count(db) == 0
 
 
+def test_mark_business_read(db):
+    notif_service.create_notification(db, NotificationBusinessType.PRODUCT_ORDER.value, 99, "收到新的商品订单")
+    notif_service.create_notification(db, NotificationBusinessType.ADOPTION_APPLICATION.value, 1, "收到新的领养申请")
+    db.commit()
+    assert notif_service.unread_count(db) == 2
+
+    # 只标记订单 99 对应的通知，不误伤其他业务
+    assert notif_service.mark_business_read(db, NotificationBusinessType.PRODUCT_ORDER.value, 99) == 1
+    db.commit()
+    assert notif_service.unread_count(db) == 1
+
+    # 不存在的 business_id 不影响
+    assert notif_service.mark_business_read(db, NotificationBusinessType.PRODUCT_ORDER.value, 123) == 0
+    db.commit()
+    assert notif_service.unread_count(db) == 1
+
+
 # ---------------- 业务触发通知 ----------------
 
 def test_care_booking_creates_notification(client: TestClient, db):

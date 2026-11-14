@@ -73,11 +73,22 @@ def test_public_list_filters(client: TestClient, db):
     assert by_kw["total"] == 1 and by_kw["items"][0]["name"] == "旺财"
 
 
-def test_public_detail_only_available(client: TestClient, db):
+def test_public_detail_visible_when_adopted(client: TestClient, db):
     cat = _category(db)
     pet = _available_pet(db, cat.id, "小白")
     assert client.get(f"{PUBLIC_LIST_URL}/{pet.id}").status_code == 200
 
+    # 已领养：详情仍可查看（用户申请记录里可回看已领养宠物）
+    pet.status = "ADOPTED"
+    db.commit()
+    assert client.get(f"{PUBLIC_LIST_URL}/{pet.id}").status_code == 200
+
+    # 下架：不对外展示
+    pet.status = "OFFLINE"
+    db.commit()
+    assert client.get(f"{PUBLIC_LIST_URL}/{pet.id}").status_code == 404
+
+    # 草稿：不对外展示
     pet.status = "DRAFT"
     db.commit()
     assert client.get(f"{PUBLIC_LIST_URL}/{pet.id}").status_code == 404

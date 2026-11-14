@@ -461,6 +461,9 @@ def ship_order(db: Session, admin: User, order_id: int) -> OrderOut:
         raise ConflictError("仅已支付订单可发货")
     order.status = OrderStatus.SHIPPED.value
     order.shipped_at = utcnow()
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.PRODUCT_ORDER.value, order.id
+    )
     db.commit()
     return _order_out(order)
 
@@ -473,6 +476,9 @@ def complete_order(db: Session, admin: User, order_id: int) -> OrderOut:
         raise ConflictError("仅已发货订单可标记完成")
     order.status = OrderStatus.COMPLETED.value
     order.completed_at = utcnow()
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.PRODUCT_ORDER.value, order.id
+    )
     db.commit()
     return _order_out(order)
 

@@ -310,6 +310,9 @@ def confirm_appointment(
 
     app.status = MedicalAppointmentStatus.CONFIRMED.value
     app.reviewed_at = utcnow()
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.MEDICAL_APPOINTMENT.value, app.id
+    )
     db.commit()
     return _to_appointment_out(app)
 
@@ -328,6 +331,9 @@ def reject_appointment(
     app.status = MedicalAppointmentStatus.REJECTED.value
     app.review_comment = comment
     app.reviewed_at = utcnow()
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.MEDICAL_APPOINTMENT.value, app.id
+    )
     db.commit()
     return _to_appointment_out(app)
 
@@ -342,6 +348,9 @@ def complete_appointment(
         raise ConflictError("仅已确认的预约可标记完成")
 
     app.status = MedicalAppointmentStatus.COMPLETED.value
+    notification_service.mark_business_read(
+        db, NotificationBusinessType.MEDICAL_APPOINTMENT.value, app.id
+    )
     db.commit()
     return _to_appointment_out(app)
 

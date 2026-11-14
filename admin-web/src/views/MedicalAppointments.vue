@@ -8,6 +8,12 @@
 
       <div class="toolbar">
         <el-input v-model="keyword" placeholder="搜索编号/宠物/电话" clearable class="search" @keyup.enter="search" />
+        <el-select v-model="locationFilter" placeholder="全部医疗点" clearable class="status" @change="onLocationChange">
+          <el-option v-for="l in locations" :key="l.id" :label="l.name" :value="l.id" />
+        </el-select>
+        <el-select v-model="doctorFilter" placeholder="全部医生" clearable class="status" @change="search">
+          <el-option v-for="d in doctors" :key="d.id" :label="d.name" :value="d.id" />
+        </el-select>
         <el-select v-model="statusFilter" placeholder="全部状态" clearable class="status" @change="search">
           <el-option v-for="(v, k) in MEDICAL_APP_STATUS" :key="k" :label="v" :value="k" />
         </el-select>
@@ -98,7 +104,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AdminHeader from '../components/AdminHeader.vue'
-import { listAppointments, confirmAppointment, rejectAppointment, completeAppointment } from '../api/medical'
+import { listAppointments, confirmAppointment, rejectAppointment, completeAppointment, listLocations, listDoctors } from '../api/medical'
 import { MEDICAL_APP_STATUS, MEDICAL_APP_STATUS_TAG } from '../utils/dict'
 
 const list = ref([])
@@ -107,6 +113,10 @@ const page = ref(1)
 const pageSize = ref(10)
 const keyword = ref('')
 const statusFilter = ref('')
+const locationFilter = ref(null)
+const doctorFilter = ref(null)
+const locations = ref([])
+const doctors = ref([])
 const loading = ref(false)
 
 const detailVisible = ref(false)
@@ -128,13 +138,32 @@ async function load() {
       page: page.value,
       page_size: pageSize.value,
       keyword: keyword.value || undefined,
-      status: statusFilter.value || undefined
+      status: statusFilter.value || undefined,
+      location_id: locationFilter.value || undefined,
+      doctor_id: doctorFilter.value || undefined
     })
     list.value = res.data.items || []
     total.value = res.data.total || 0
   } finally {
     loading.value = false
   }
+}
+
+async function loadLocations() {
+  try {
+    locations.value = (await listLocations()).data || []
+  } catch {}
+}
+
+async function loadDoctors() {
+  try {
+    doctors.value = (await listDoctors(locationFilter.value || undefined)).data || []
+  } catch {}
+}
+
+function onLocationChange() {
+  doctorFilter.value = null
+  loadDoctors().then(search)
 }
 
 function search() {
@@ -179,7 +208,11 @@ async function doReject() {
   }
 }
 
-onMounted(load)
+onMounted(async () => {
+  await loadLocations()
+  await loadDoctors()
+  load()
+})
 </script>
 
 <style scoped>

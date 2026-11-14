@@ -1,5 +1,5 @@
 """通知与业务提醒：创建/查询/已读 + 事务提交后的 WebSocket 推送。"""
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.common.pagination import PageResult, normalize_page
@@ -101,6 +101,24 @@ def mark_read(db: Session, notification_id: int) -> NotificationOut:
         n.read_at = utcnow()
         db.commit()
     return _to_out(n)
+
+
+def mark_business_read(db: Session, business_type: str, business_id: int) -> int:
+    """将某业务对象（申请/预约/订单）对应的未读通知标记为已读，返回标记条数。
+
+    在处理业务（审核/确认/发货/完成）时于事务内、commit 前调用，随业务一起提交，
+    使工作台红点（未读数）在业务处理后正确减少。
+    """
+    result = db.execute(
+        update(AdminNotification)
+        .where(
+            AdminNotification.business_type == business_type,
+            AdminNotification.business_id == business_id,
+            AdminNotification.is_read.is_(False),
+        )
+        .values(is_read=True, read_at=utcnow())
+    )
+    return result.rowcount or 0
 
 
 def mark_all_read(db: Session) -> int:

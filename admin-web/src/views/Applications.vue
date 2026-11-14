@@ -8,6 +8,9 @@
 
       <div class="toolbar">
         <el-input v-model="keyword" placeholder="搜索编号/联系人/电话" clearable class="search" @keyup.enter="search" />
+        <el-select v-model="petFilter" placeholder="全部宠物" clearable filterable class="pet" @change="search">
+          <el-option v-for="p in pets" :key="p.id" :label="p.name" :value="p.id" />
+        </el-select>
         <el-select v-model="statusFilter" placeholder="全部状态" clearable class="status" @change="search">
           <el-option v-for="(v, k) in APP_STATUS" :key="k" :label="v" :value="k" />
         </el-select>
@@ -108,7 +111,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AdminHeader from '../components/AdminHeader.vue'
-import { listApplications, approveApplication, rejectApplication } from '../api/adoption'
+import { listApplications, approveApplication, rejectApplication, listPets } from '../api/adoption'
 import { APP_STATUS, APP_STATUS_TAG } from '../utils/dict'
 
 const list = ref([])
@@ -117,6 +120,8 @@ const page = ref(1)
 const pageSize = ref(10)
 const keyword = ref('')
 const statusFilter = ref('')
+const petFilter = ref(null)
+const pets = ref([])
 const loading = ref(false)
 
 const detailVisible = ref(false)
@@ -139,13 +144,21 @@ async function load() {
       page: page.value,
       page_size: pageSize.value,
       keyword: keyword.value || undefined,
-      status: statusFilter.value || undefined
+      status: statusFilter.value || undefined,
+      pet_id: petFilter.value || undefined
     })
     list.value = res.data.items || []
     total.value = res.data.total || 0
   } finally {
     loading.value = false
   }
+}
+
+async function loadPets() {
+  try {
+    const res = await listPets({ page: 1, page_size: 100 })
+    pets.value = res.data.items || []
+  } catch {}
 }
 
 function search() {
@@ -192,7 +205,10 @@ async function doReject() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  loadPets()
+  load()
+})
 </script>
 
 <style scoped>
@@ -223,6 +239,9 @@ onMounted(load)
   width: 260px;
 }
 .status {
+  width: 150px;
+}
+.pet {
   width: 150px;
 }
 .pet-cell {
